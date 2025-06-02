@@ -76,6 +76,8 @@ mcp-feedback-collector config
 
 ### Claude Desktop集成
 
+#### 方式一：NPM包运行（推荐）
+
 在Claude Desktop，cursor的MCP配置中添加：
 
 ```json
@@ -88,13 +90,94 @@ mcp-feedback-collector config
         "MCP_API_KEY": "your_api_key_here",
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
-        "MCP_WEB_PORT": "5000",
+        "MCP_WEB_PORT": "5050",
         "MCP_DIALOG_TIMEOUT": "60000"
       }
     }
   }
 }
 ```
+
+#### 方式二：源码运行（本地开发）
+
+如果您克隆了源码并想直接运行，可以使用以下配置：
+
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "node",
+      "args": ["path/to/your/project/dist/cli.js"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000"
+      }
+    }
+  }
+}
+```
+
+**注意**：
+- 将 `path/to/your/project` 替换为您的实际项目路径
+- 确保已运行 `npm run build` 构建项目
+- 使用绝对路径，例如：`d:/zhuomian/nodejsweb/dist/cli.js`
+
+#### 方式三：TypeScript源码直接运行（开发模式）
+
+如果您想直接运行TypeScript源码而无需构建：
+
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "npx",
+      "args": ["tsx", "path/to/your/project/src/cli.ts"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}
+```
+
+**优点**：无需构建，直接运行源码
+**缺点**：启动稍慢，需要tsx依赖
+
+#### 🚀 快速配置示例
+
+假设您的项目位于 `d:\zhuomian\nodejsweb`，推荐配置：
+
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "node",
+      "args": ["d:/zhuomian/nodejsweb/dist/cli.js"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000"
+      }
+    }
+  }
+}
+```
+
+**配置步骤**：
+1. 确保项目已构建：`npm run build`
+2. 将上述配置添加到Cursor的MCP设置中
+3. 替换 `your_api_key_here` 为您的实际API密钥
+4. 重启Cursor，查看MCP服务器状态为绿色
 ## 在cursor规则中可以下面这样配置
 “Whenever you want to ask a question, always call the MCP .
 
@@ -228,14 +311,45 @@ cd mcp-feedback-collector-web
 # 安装依赖
 npm install
 
-# 开发模式
+# 开发模式（实时编译TypeScript）
 npm run dev
 
-# 构建
+# 构建项目（生成dist目录）
 npm run build
+
+# 启动已构建的项目
+npm start
 
 # 测试
 npm test
+
+# 健康检查
+npm start health
+
+# 显示配置
+npm start config
+```
+
+#### MCP配置测试
+
+构建完成后，您可以使用以下配置在Cursor中测试：
+
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "node",
+      "args": ["您的项目路径/dist/cli.js"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000"
+      }
+    }
+  }
+}
 ```
 
 ### 项目结构
@@ -275,7 +389,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 📊 项目状态
 
-- **当前版本**: v2.0.3
+- **当前版本**: v2.0.5
 - **维护状态**: 积极维护
 - **测试覆盖率**: 85%+
 - **支持平台**: Windows, macOS, Linux

@@ -1,0 +1,66 @@
+{
+  "// 方案一：使用已构建的 dist 文件（推荐）": "",
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "node",
+      "args": ["d:/zhuomian/nodejsweb/dist/cli.js"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "LOG_LEVEL": "info"
+      }
+    }
+  },
+
+  "// 方案二：使用 tsx 直接运行 TypeScript 源码": "",
+  "mcpServers_tsx": {
+    "mcp-feedback-collector": {
+      "command": "npx",
+      "args": ["tsx", "d:/zhuomian/nodejsweb/src/cli.ts"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "LOG_LEVEL": "info"
+      }
+    }
+  },
+
+  "// 方案三：使用 npm run dev 开发模式": "",
+  "mcpServers_dev": {
+    "mcp-feedback-collector": {
+      "command": "npm",
+      "args": ["run", "dev"],
+      "cwd": "d:/zhuomian/nodejsweb",
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "LOG_LEVEL": "info"
+      }
+    }
+  },
+
+  "// 方案四：调试模式配置（仅用于开发调试，不要在 Cursor 中使用）": "",
+  "debug_config": {
+    "mcp-feedback-collector": {
+      "command": "node",
+      "args": ["d:/zhuomian/nodejsweb/dist/cli.js", "--debug"],
+      "env": {
+        "MCP_API_KEY": "your_api_key_here",
+        "MCP_API_BASE_URL": "https://api.ssopen.top",
+        "MCP_DEFAULT_MODEL": "grok-3",
+        "MCP_WEB_PORT": "5050",
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "LOG_LEVEL": "debug"
+      }
+    }
+  }
+}
