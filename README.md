@@ -279,3 +279,5 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 - **维护状态**: 积极维护
 - **测试覆盖率**: 85%+
 - **支持平台**: Windows, macOS, Linux
+## 感谢支持
+https://api.ssopen.top/ API中转站，290+AI 大模型，官方成本七分之一，支持高并发！
