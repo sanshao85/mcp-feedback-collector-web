@@ -57,7 +57,7 @@ export function createDefaultConfig(): Config {
     apiBaseUrl: getEnvVar('MCP_API_BASE_URL', 'https://api.ssopen.top'),
     defaultModel: getEnvVar('MCP_DEFAULT_MODEL', 'gpt-4o-mini'),
     webPort: getEnvNumber('MCP_WEB_PORT', 5000),
-    dialogTimeout: getEnvNumber('MCP_DIALOG_TIMEOUT', 300),
+    dialogTimeout: getEnvNumber('MCP_DIALOG_TIMEOUT', 60000),
     enableChat: getEnvBoolean('MCP_ENABLE_CHAT', true),
     corsOrigin: getEnvVar('MCP_CORS_ORIGIN', '*'),
     maxFileSize: getEnvNumber('MCP_MAX_FILE_SIZE', 10485760), // 10MB
@@ -80,10 +80,10 @@ export function validateConfig(config: Config): void {
     );
   }
 
-  // 验证超时时间
-  if (config.dialogTimeout < 10 || config.dialogTimeout > 3600) {
+  // 验证超时时间 - 扩展支持到60000秒（约16.7小时）
+  if (config.dialogTimeout < 10 || config.dialogTimeout > 60000) {
     throw new MCPError(
-      `Invalid timeout: ${config.dialogTimeout}. Must be between 10 and 3600 seconds.`,
+      `Invalid timeout: ${config.dialogTimeout}. Must be between 10 and 60000 seconds.`,
       'INVALID_TIMEOUT'
     );
   }

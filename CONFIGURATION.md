@@ -15,7 +15,7 @@
 | `MCP_API_BASE_URL` | AI API基础URL | `https://api.ssopen.top` | 有效URL |
 | `MCP_DEFAULT_MODEL` | 默认AI模型 | `gpt-4o-mini` | 任意字符串 |
 | `MCP_WEB_PORT` | Web服务器端口 | `5000` | 1024-65535 |
-| `MCP_DIALOG_TIMEOUT` | 反馈收集超时时间（秒） | `300` | 10-3600 |
+| `MCP_DIALOG_TIMEOUT` | 反馈收集超时时间（秒） | `60000` | 10-60000 |
 | `MCP_ENABLE_CHAT` | 启用AI对话功能 | `true` | true/false |
 | `MCP_CORS_ORIGIN` | CORS允许的源 | `*` | 任意字符串 |
 | `MCP_MAX_FILE_SIZE` | 最大文件大小（字节） | `10485760` | 1024-104857600 |
@@ -35,7 +35,7 @@
         "MCP_API_KEY": "sk-zhdAJNyzSg1vAeoGhAaY5cnaMgDuvs0Q9H5LirPUuWW7hQGr",
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
-        "MCP_DIALOG_TIMEOUT": "600"
+        "MCP_DIALOG_TIMEOUT": "60000"
       }
     }
   }
@@ -54,7 +54,7 @@
         "MCP_API_KEY": "your_api_key_here",
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
-        "MCP_DIALOG_TIMEOUT": "300"
+        "MCP_DIALOG_TIMEOUT": "60000"
       }
     }
   }
@@ -66,8 +66,8 @@
 ### 环境变量方式
 
 ```bash
-# 设置默认超时时间为10分钟
-export MCP_DIALOG_TIMEOUT="600"
+# 设置默认超时时间为16.7小时
+export MCP_DIALOG_TIMEOUT="60000"
 ```
 
 ### MCP配置方式
@@ -75,7 +75,7 @@ export MCP_DIALOG_TIMEOUT="600"
 ```json
 {
   "env": {
-    "MCP_DIALOG_TIMEOUT": "600"
+    "MCP_DIALOG_TIMEOUT": "60000"
   }
 }
 ```
@@ -94,16 +94,17 @@ collect_feedback("工作汇报内容", 900)  // 15分钟
 
 1. **工具函数参数** - 最高优先级
 2. **环境变量 MCP_DIALOG_TIMEOUT** - 中等优先级
-3. **默认值 300秒** - 最低优先级
+3. **默认值 60000秒** - 最低优先级
 
 ### 超时时间建议
 
 | 使用场景 | 建议时间 | 说明 |
 |---------|---------|------|
-| 快速测试 | 60-120秒 | 用于功能验证 |
-| 日常使用 | 300-600秒 | 平衡用户体验 |
-| 详细反馈 | 900-1800秒 | 复杂项目评审 |
-| 演示展示 | 180-300秒 | 避免等待过久 |
+| 快速测试 | 60-300秒 | 用于功能验证 |
+| 日常使用 | 1800-3600秒 | 平衡用户体验 |
+| 详细反馈 | 7200-14400秒 | 复杂项目评审 |
+| 长期收集 | 21600-60000秒 | 持续反馈收集 |
+| 演示展示 | 300-600秒 | 避免等待过久 |
 
 ## 🎯 常用配置场景
 
@@ -165,7 +166,7 @@ npx mcp-feedback-collector test-feedback --timeout 120
 
 ## ⚠️ 注意事项
 
-1. **超时时间范围**: 必须在10-3600秒之间
+1. **超时时间范围**: 必须在10-60000秒之间
 2. **端口冲突**: 确保指定的端口未被占用
 3. **API密钥**: 生产环境中请妥善保管API密钥
 4. **文件大小**: 图片上传受`MCP_MAX_FILE_SIZE`限制

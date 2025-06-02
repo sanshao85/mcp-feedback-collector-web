@@ -12,7 +12,7 @@ import { MCPServer } from './server/mcp-server.js';
 import { MCPError } from './types/index.js';
 
 // 版本信息
-const VERSION = '2.0.4';
+const VERSION = '2.0.5';
 
 // 在最开始检测MCP模式并设置日志级别
 // 改进的MCP模式检测：检查多个条件

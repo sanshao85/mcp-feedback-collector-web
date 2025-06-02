@@ -41,7 +41,7 @@ MCP_DEFAULT_MODEL="grok-3"
 
 # Web服务器配置
 MCP_WEB_PORT="5000"
-MCP_DIALOG_TIMEOUT="300"  # 反馈收集超时时间（秒），范围：10-3600
+MCP_DIALOG_TIMEOUT="60000"  # 反馈收集超时时间（秒），范围：10-60000
 
 # 功能开关
 MCP_ENABLE_CHAT="true"
@@ -89,7 +89,7 @@ mcp-feedback-collector config
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
         "MCP_WEB_PORT": "5000",
-        "MCP_DIALOG_TIMEOUT": "300"
+        "MCP_DIALOG_TIMEOUT": "60000"
       }
     }
   }

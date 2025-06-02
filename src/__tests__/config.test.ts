@@ -22,7 +22,7 @@ describe('配置管理', () => {
         apiBaseUrl: 'https://api.ssopen.top',
         defaultModel: 'gpt-4o-mini',
         webPort: 5000,
-        dialogTimeout: 300,
+        dialogTimeout: 60000,
         enableChat: true,
         corsOrigin: '*',
         maxFileSize: 10485760,
@@ -53,7 +53,7 @@ describe('配置管理', () => {
       const config = createDefaultConfig();
       
       expect(config.webPort).toBe(5000); // 回退到默认值
-      expect(config.dialogTimeout).toBe(300); // 回退到默认值
+      expect(config.dialogTimeout).toBe(60000); // 回退到默认值
     });
   });
 
@@ -90,8 +90,8 @@ describe('配置管理', () => {
 
     test('应该拒绝过长超时时间', () => {
       const config = createDefaultConfig();
-      config.dialogTimeout = 4000; // 大于3600秒
-      
+      config.dialogTimeout = 70000; // 大于60000秒
+
       expect(() => validateConfig(config)).toThrow(MCPError);
       expect(() => validateConfig(config)).toThrow('Invalid timeout');
     });
