@@ -16,6 +16,10 @@
 - 🌐 **跨平台**: 支持Windows、macOS、Linux
 - ⚡ **高性能**: 解决了Python版本的稳定性问题
 
+## 开发过程视频教程
+油管：https://youtu.be/CHVRJtg9vFw
+B站：https://www.bilibili.com/video/BV1147tzJE8T/
+
 ## 🚀 快速开始
 
 ### 安装和运行
