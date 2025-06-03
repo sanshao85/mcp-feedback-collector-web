@@ -25,7 +25,7 @@ export class MCPServer {
     // 创建MCP服务器实例
     this.mcpServer = new McpServer({
       name: 'mcp-feedback-collector',
-      version: '2.0.1'
+      version: '2.0.6'
     }, {
       capabilities: {
         tools: {}
@@ -52,13 +52,11 @@ export class MCPServer {
     this.mcpServer.tool(
       'collect_feedback',
       {
-        work_summary: z.string().describe('AI工作汇报内容'),
-        timeout_seconds: z.number().optional().describe('反馈收集超时时间（秒），默认300秒')
+        work_summary: z.string().describe('AI工作汇报内容')
       },
-      async (args: { work_summary: string; timeout_seconds?: number | undefined }): Promise<CallToolResult> => {
+      async (args: { work_summary: string }): Promise<CallToolResult> => {
         const params: CollectFeedbackParams = {
-          work_summary: args.work_summary,
-          timeout_seconds: args.timeout_seconds
+          work_summary: args.work_summary
         };
 
         logger.mcp('collect_feedback', params);
@@ -92,7 +90,8 @@ export class MCPServer {
    * 实现collect_feedback功能
    */
   private async collectFeedback(params: CollectFeedbackParams): Promise<CallToolResult> {
-    const { work_summary, timeout_seconds = this.config.dialogTimeout } = params;
+    const { work_summary } = params;
+    const timeout_seconds = this.config.dialogTimeout;
 
     logger.info(`开始收集反馈，工作汇报长度: ${work_summary.length}字符，超时: ${timeout_seconds}秒`);
 

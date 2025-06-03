@@ -1,6 +1,6 @@
 {
   "name": "mcp-feedback-collector",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "基于Node.js的MCP反馈收集器 - 支持AI工作汇报和用户反馈收集",
   "main": "dist/index.js",
   "bin": {

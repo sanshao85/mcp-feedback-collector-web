@@ -201,16 +201,17 @@ Whenever you’re about to complete a user request, call the MCP instead of simp
 收集用户对AI工作的反馈：
 
 ```typescript
-// 基本调用（使用默认超时时间）
+// 基本调用（超时时间从环境变量读取）
 collect_feedback("我已经完成了代码重构工作，主要改进了性能和可读性。")
-
-// 自定义超时时间（秒）
-collect_feedback("我已经完成了代码重构工作，主要改进了性能和可读性。", 600)
 ```
 
 **参数说明**:
 - `work_summary` (必需): AI工作汇报内容
-- `timeout_seconds` (可选): 反馈收集超时时间，默认使用环境变量`MCP_DIALOG_TIMEOUT`的值
+
+**超时时间配置**:
+- 超时时间通过环境变量 `MCP_DIALOG_TIMEOUT` 统一配置
+- 默认值为 60000 秒（约16.7小时）
+- 有效范围：10-60000 秒
 
 **功能**:
 - 启动Web界面显示工作汇报

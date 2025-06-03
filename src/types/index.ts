@@ -44,7 +44,6 @@ export interface WorkSummary {
 // MCP工具函数参数类型
 export interface CollectFeedbackParams {
   work_summary: string;
-  timeout_seconds?: number | undefined;
 }
 
 // MCP内容类型 - 符合MCP协议标准

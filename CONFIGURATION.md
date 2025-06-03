@@ -80,21 +80,19 @@ export MCP_DIALOG_TIMEOUT="60000"
 }
 ```
 
-### 工具函数参数方式
+### 工具函数调用
 
 ```typescript
-// 使用默认超时时间（来自环境变量）
+// 超时时间统一从环境变量读取
 collect_feedback("工作汇报内容")
-
-// 自定义超时时间（覆盖环境变量）
-collect_feedback("工作汇报内容", 900)  // 15分钟
 ```
 
-### 超时时间优先级
+### 超时时间配置
 
-1. **工具函数参数** - 最高优先级
-2. **环境变量 MCP_DIALOG_TIMEOUT** - 中等优先级
-3. **默认值 60000秒** - 最低优先级
+超时时间通过环境变量 `MCP_DIALOG_TIMEOUT` 统一管理：
+
+1. **环境变量 MCP_DIALOG_TIMEOUT** - 统一配置
+2. **默认值 60000秒** - 备用默认值
 
 ### 超时时间建议
 
@@ -190,8 +188,12 @@ LOG_LEVEL=debug npx mcp-feedback-collector start
 # 增加超时时间
 export MCP_DIALOG_TIMEOUT="900"
 
-# 或在工具函数中指定
-collect_feedback("内容", 900)
+# 或在MCP配置中设置
+{
+  "env": {
+    "MCP_DIALOG_TIMEOUT": "900"
+  }
+}
 ```
 
 ### 端口冲突
