@@ -1,0 +1,58 @@
+# Source files
+src/
+*.ts
+!dist/**/*.d.ts
+
+# Development files
+.env
+.env.*
+*.log
+logs/
+node_modules/
+coverage/
+
+# Build tools
+tsconfig.json
+jest.config.js
+.eslintrc.json
+scripts/
+
+# Development documentation (keep main docs)
+development-journey.html
+DEVELOPMENT_SUMMARY.md
+TECHNICAL_ACHIEVEMENTS.md
+PROJECT_TRACKING.md
+FUNCTIONAL_REQUIREMENTS.md
+DEBUG_MCP_COMMUNICATION.md
+TESTING_STRATEGY.md
+RELEASE_CHECKLIST.md
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Git files
+.git/
+.gitignore
+
+# Test files
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Claude Desktop config (contains API keys)
+claude-desktop-config*.json
+
+# TypeScript SDK (external dependency)
+typescript-sdk-main/
