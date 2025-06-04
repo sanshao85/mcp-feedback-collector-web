@@ -6,7 +6,6 @@ yarn-error.log*
 package-lock.json
 
 # Build outputs
-dist/
 build/
 *.tsbuildinfo
 
