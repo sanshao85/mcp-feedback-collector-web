@@ -17,8 +17,8 @@
 - ⚡ **高性能**: 解决了Python版本的稳定性问题
 
 ## 开发过程视频教程
-油管：https://youtu.be/CHVRJtg9vFw
-B站：https://www.bilibili.com/video/BV1147tzJE8T/
+油管：https://youtu.be/Osr1OSMgzlg
+B站：https://www.bilibili.com/video/BV1PHTxzSErb/
 
 ## 🚀 快速开始
 
