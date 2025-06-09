@@ -25,7 +25,7 @@ export class MCPServer {
     // 创建MCP服务器实例
     this.mcpServer = new McpServer({
       name: 'mcp-feedback-collector',
-      version: '2.1.1'
+      version: '2.1.2'
     }, {
       capabilities: {
         tools: {}

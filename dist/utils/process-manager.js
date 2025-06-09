@@ -1,16 +1,17 @@
 /**
- * MCP Feedback Collector - 跨平台进程管理工具
+ * MCP Feedback Collector - 增强的跨平台进程管理工具
  */
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { logger } from './logger.js';
-import { MCPError } from '../types/index.js';
 const execAsync = promisify(exec);
 /**
- * 跨平台进程管理器
+ * 增强的跨平台进程管理器
  */
 export class ProcessManager {
     isWindows = process.platform === 'win32';
+    isMacOS = process.platform === 'darwin';
+    isLinux = process.platform === 'linux';
     /**
      * 获取占用指定端口的进程信息
      */
@@ -169,9 +170,42 @@ export class ProcessManager {
         }
     }
     /**
+     * 检查是否是自己的进程（僵尸进程）
+     */
+    isOwnProcess(processInfo) {
+        const ownProcessNames = [
+            'node',
+            'mcp-feedback-collector',
+            'tsx'
+        ];
+        const ownKeywords = [
+            'mcp-feedback-collector',
+            'cli.js',
+            'cli.ts',
+            'dist/cli.js',
+            'src/cli.ts'
+        ];
+        const processName = processInfo.name.toLowerCase();
+        const processCommand = processInfo.command.toLowerCase();
+        // 检查进程名
+        const nameMatches = ownProcessNames.some(name => processName.includes(name.toLowerCase()));
+        // 检查命令行参数
+        const commandMatches = ownKeywords.some(keyword => processCommand.includes(keyword.toLowerCase()));
+        const isOwn = nameMatches && commandMatches;
+        if (isOwn) {
+            logger.debug(`识别为自己的进程: ${processInfo.name} (PID: ${processInfo.pid})`);
+            logger.debug(`命令行: ${processInfo.command}`);
+        }
+        return isOwn;
+    }
+    /**
      * 检查进程是否安全可终止
      */
     isSafeToKill(processInfo) {
+        // 如果是自己的进程，总是安全的
+        if (this.isOwnProcess(processInfo)) {
+            return true;
+        }
         const safePrefixes = [
             'node',
             'npm',
@@ -188,7 +222,11 @@ export class ProcessManager {
             'winlogon.exe',
             'csrss.exe',
             'smss.exe',
-            'services.exe'
+            'services.exe',
+            'launchd', // macOS
+            'kextd', // macOS
+            'WindowServer', // macOS
+            'loginwindow' // macOS
         ];
         const processName = processInfo.name.toLowerCase();
         const processCommand = processInfo.command.toLowerCase();
@@ -208,7 +246,90 @@ export class ProcessManager {
         return false;
     }
     /**
-     * 强制释放端口（安全版本）
+     * 等待指定时间
+     */
+    async wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    /**
+     * 检查进程是否已死亡
+     */
+    async isProcessDead(pid) {
+        try {
+            if (this.isWindows) {
+                const { stdout } = await execAsync(`tasklist /FI "PID eq ${pid}" /FO CSV`);
+                return !stdout.includes(`"${pid}"`);
+            }
+            else {
+                // Unix系统：使用 kill -0 检查进程是否存在
+                await execAsync(`kill -0 ${pid}`);
+                return false; // 如果没有抛出异常，说明进程还存在
+            }
+        }
+        catch (error) {
+            return true; // 抛出异常说明进程不存在
+        }
+    }
+    /**
+     * 获取平台适配的终止命令列表
+     */
+    getKillCommands(pid) {
+        if (this.isWindows) {
+            return [
+                `taskkill /PID ${pid}`, // 优雅终止
+                `taskkill /F /PID ${pid}`, // 强制终止
+                `wmic process where processid=${pid} delete`, // 备用方案
+                `powershell "Stop-Process -Id ${pid} -Force"` // PowerShell强制终止
+            ];
+        }
+        else {
+            return [
+                `kill -TERM ${pid}`, // 优雅终止 (SIGTERM)
+                `kill -KILL ${pid}`, // 强制终止 (SIGKILL)
+            ];
+        }
+    }
+    /**
+     * 渐进式进程终止
+     */
+    async progressiveKill(pid) {
+        logger.info(`开始渐进式终止进程: ${pid}`);
+        const commands = this.getKillCommands(pid);
+        for (let i = 0; i < commands.length; i++) {
+            const cmd = commands[i];
+            const isLast = i === commands.length - 1;
+            // 确保命令不为空
+            if (!cmd || cmd.trim() === '') {
+                logger.warn(`跳过空命令 (索引: ${i})`);
+                continue;
+            }
+            try {
+                logger.debug(`执行终止命令: ${cmd}`);
+                await execAsync(cmd);
+                // 等待进程退出
+                const waitTime = this.isWindows ? 2000 : 1000;
+                await this.wait(waitTime);
+                // 检查进程是否已死亡
+                if (await this.isProcessDead(pid)) {
+                    logger.info(`进程 ${pid} 已成功终止 (使用命令: ${cmd})`);
+                    return true;
+                }
+                if (!isLast) {
+                    logger.warn(`命令 "${cmd}" 未能终止进程 ${pid}，尝试下一个命令`);
+                }
+            }
+            catch (error) {
+                logger.debug(`命令 "${cmd}" 执行失败:`, error);
+                // 如果是最后一个命令，记录错误
+                if (isLast) {
+                    logger.error(`所有终止命令都失败了，进程 ${pid} 可能无法终止`);
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * 强制释放端口（增强版本）
      */
     async forceReleasePort(port) {
         logger.info(`尝试强制释放端口: ${port}`);
@@ -222,33 +343,59 @@ export class ProcessManager {
             name: processInfo.name,
             command: processInfo.command
         });
+        // 检查是否是自己的进程
+        if (this.isOwnProcess(processInfo)) {
+            logger.info(`发现自己的僵尸进程，直接清理: ${processInfo.name} (PID: ${processInfo.pid})`);
+            const success = await this.progressiveKill(processInfo.pid);
+            if (success) {
+                // 等待端口释放
+                if (await this.waitForPortRelease(port, 10000)) {
+                    logger.info(`端口 ${port} 已成功释放`);
+                    return true;
+                }
+            }
+            logger.error(`无法清理自己的僵尸进程: PID ${processInfo.pid}`);
+            return false;
+        }
         // 安全检查
         if (!this.isSafeToKill(processInfo)) {
-            throw new MCPError(`不安全的进程，拒绝终止: ${processInfo.name} (PID: ${processInfo.pid})`, 'UNSAFE_PROCESS_KILL', { processInfo });
+            logger.warn(`不安全的进程，跳过终止: ${processInfo.name} (PID: ${processInfo.pid})`);
+            return false;
         }
-        // 先尝试优雅终止
-        logger.info(`尝试优雅终止进程: ${processInfo.pid}`);
-        let success = await this.killProcess(processInfo.pid, false);
-        if (!success) {
-            // 等待2秒后强制终止
-            logger.warn(`优雅终止失败，2秒后强制终止进程: ${processInfo.pid}`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            success = await this.killProcess(processInfo.pid, true);
-        }
+        // 尝试渐进式终止
+        logger.info(`尝试终止安全进程: ${processInfo.name} (PID: ${processInfo.pid})`);
+        const success = await this.progressiveKill(processInfo.pid);
         if (success) {
-            // 等待进程完全退出
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            // 验证端口是否已释放
-            const stillOccupied = await this.getPortProcess(port);
-            if (!stillOccupied) {
+            // 等待端口释放
+            if (await this.waitForPortRelease(port, 10000)) {
                 logger.info(`端口 ${port} 已成功释放`);
                 return true;
             }
             else {
-                logger.error(`端口 ${port} 仍被占用`);
+                logger.error(`进程已终止但端口 ${port} 仍被占用`);
                 return false;
             }
         }
+        logger.error(`无法终止进程: ${processInfo.name} (PID: ${processInfo.pid})`);
+        return false;
+    }
+    /**
+     * 等待端口释放
+     */
+    async waitForPortRelease(port, maxWait = 10000) {
+        logger.debug(`等待端口 ${port} 释放，最大等待时间: ${maxWait}ms`);
+        const startTime = Date.now();
+        const checkInterval = this.isWindows ? 1000 : 500; // Windows需要更长的等待时间
+        while (Date.now() - startTime < maxWait) {
+            const processInfo = await this.getPortProcess(port);
+            if (!processInfo) {
+                logger.debug(`端口 ${port} 已释放`);
+                return true;
+            }
+            logger.debug(`端口 ${port} 仍被占用，继续等待...`);
+            await this.wait(checkInterval);
+        }
+        logger.warn(`等待端口 ${port} 释放超时`);
         return false;
     }
 }

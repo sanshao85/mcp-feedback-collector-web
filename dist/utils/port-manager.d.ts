@@ -18,7 +18,15 @@ export declare class PortManager {
      */
     isPortTrulyAvailable(port: number): Promise<boolean>;
     /**
-     * 查找可用端口
+     * 智能端口冲突解决
+     */
+    resolvePortConflict(port: number): Promise<number>;
+    /**
+     * 寻找替代端口
+     */
+    findAlternativePort(preferredPort: number): Promise<number>;
+    /**
+     * 查找可用端口（传统方法）
      */
     findAvailablePort(preferredPort?: number): Promise<number>;
     /**

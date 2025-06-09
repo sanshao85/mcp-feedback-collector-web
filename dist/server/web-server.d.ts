@@ -18,6 +18,10 @@ export declare class WebServer {
     private sessionStorage;
     constructor(config: Config);
     /**
+     * 设置优雅退出处理
+     */
+    private setupGracefulShutdown;
+    /**
      * 设置中间件
      */
     private setupMiddleware;
@@ -53,6 +57,10 @@ export declare class WebServer {
      * 启动Web服务器
      */
     start(): Promise<void>;
+    /**
+     * 优雅停止Web服务器
+     */
+    gracefulStop(): Promise<void>;
     /**
      * 停止Web服务器
      */

@@ -62,6 +62,58 @@ export class WebServer {
     this.setupMiddleware();
     this.setupRoutes();
     this.setupSocketHandlers();
+    this.setupGracefulShutdown();
+  }
+
+  /**
+   * 设置优雅退出处理
+   */
+  private setupGracefulShutdown(): void {
+    // 注册退出信号处理
+    const gracefulShutdown = async (signal: string) => {
+      logger.info(`收到 ${signal} 信号，开始优雅关闭...`);
+
+      try {
+        await this.gracefulStop();
+        logger.info('优雅关闭完成');
+        process.exit(0);
+      } catch (error) {
+        logger.error('优雅关闭失败:', error);
+        process.exit(1);
+      }
+    };
+
+    // 标准退出信号
+    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
+    // Windows特有的退出信号
+    if (process.platform === 'win32') {
+      process.on('SIGBREAK', () => gracefulShutdown('SIGBREAK'));
+    }
+
+    // 未捕获的异常
+    process.on('uncaughtException', async (error) => {
+      logger.error('未捕获的异常:', error);
+      try {
+        await this.gracefulStop();
+      } catch (stopError) {
+        logger.error('异常退出时清理失败:', stopError);
+      }
+      process.exit(1);
+    });
+
+    // 未处理的Promise拒绝
+    process.on('unhandledRejection', async (reason, promise) => {
+      logger.error('未处理的Promise拒绝:', reason);
+      logger.error('Promise:', promise);
+      try {
+        await this.gracefulStop();
+      } catch (stopError) {
+        logger.error('异常退出时清理失败:', stopError);
+      }
+      process.exit(1);
+    });
   }
 
   /**
@@ -557,14 +609,9 @@ export class WebServer {
           this.config.killProcessOnPortConflict || false
         );
       } else {
-        // 传统模式：查找可用端口
-        // 如果启用了端口清理且指定了首选端口，先尝试清理
-        if (this.config.cleanupPortOnStart && this.config.webPort) {
-          logger.info(`启动时端口清理已启用，尝试清理首选端口 ${this.config.webPort}`);
-          await this.portManager.cleanupPort(this.config.webPort);
-        }
-
-        this.port = await this.portManager.findAvailablePort(this.config.webPort);
+        // 智能端口模式：使用新的冲突解决方案
+        logger.info(`智能端口模式: 尝试使用端口 ${this.config.webPort}`);
+        this.port = await this.portManager.resolvePortConflict(this.config.webPort);
       }
 
       // 启动服务器前再次确认端口可用
@@ -606,6 +653,57 @@ export class WebServer {
         'WEB_SERVER_START_ERROR',
         error
       );
+    }
+  }
+
+  /**
+   * 优雅停止Web服务器
+   */
+  async gracefulStop(): Promise<void> {
+    if (!this.isServerRunning) {
+      return;
+    }
+
+    const currentPort = this.port;
+    logger.info(`开始优雅停止Web服务器 (端口: ${currentPort})...`);
+
+    try {
+      // 1. 停止接受新连接
+      if (this.server) {
+        this.server.close();
+      }
+
+      // 2. 通知所有客户端即将关闭
+      if (this.io) {
+        this.io.emit('server_shutdown', {
+          message: '服务器即将关闭',
+          timestamp: new Date().toISOString()
+        });
+
+        // 等待客户端处理关闭通知
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // 3. 关闭所有Socket连接
+      if (this.io) {
+        this.io.close();
+      }
+
+      // 4. 清理会话数据
+      this.sessionStorage.clear();
+      this.sessionStorage.stopCleanupTimer();
+
+      // 5. 等待所有异步操作完成
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      this.isServerRunning = false;
+      logger.info(`Web服务器已优雅停止 (端口: ${currentPort})`);
+
+    } catch (error) {
+      logger.error('优雅停止Web服务器时出错:', error);
+      // 即使出错也要标记为已停止
+      this.isServerRunning = false;
+      throw error;
     }
   }
 

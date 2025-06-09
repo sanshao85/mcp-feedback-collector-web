@@ -76,7 +76,90 @@ export class PortManager {
   }
 
   /**
-   * 查找可用端口
+   * 智能端口冲突解决
+   */
+  async resolvePortConflict(port: number): Promise<number> {
+    logger.info(`开始解决端口 ${port} 的冲突`);
+
+    // 1. 检查端口是否可用
+    if (await this.isPortAvailable(port)) {
+      logger.info(`端口 ${port} 可用，直接使用`);
+      return port;
+    }
+
+    // 2. 获取占用进程信息
+    const processInfo = await processManager.getPortProcess(port);
+    if (!processInfo) {
+      // 端口被占用但找不到进程，等待释放
+      logger.info(`端口 ${port} 被占用但找不到进程，等待释放...`);
+      if (await processManager.waitForPortRelease(port, 5000)) {
+        logger.info(`端口 ${port} 已自动释放`);
+        return port;
+      }
+      logger.warn(`端口 ${port} 释放超时，寻找其他端口`);
+      return await this.findAlternativePort(port);
+    }
+
+    // 3. 检查是否是自己的进程
+    if (processManager.isOwnProcess(processInfo)) {
+      logger.info(`发现自己的僵尸进程，尝试清理: PID ${processInfo.pid}`);
+
+      if (await processManager.forceReleasePort(port)) {
+        logger.info(`成功清理僵尸进程，端口 ${port} 已释放`);
+        return port;
+      } else {
+        logger.error(`无法清理僵尸进程，寻找其他端口`);
+        return await this.findAlternativePort(port);
+      }
+    }
+
+    // 4. 检查是否是安全进程
+    if (processManager.isSafeToKill(processInfo)) {
+      logger.warn(`尝试终止安全进程: ${processInfo.name} (PID: ${processInfo.pid})`);
+
+      if (await processManager.forceReleasePort(port)) {
+        logger.info(`成功终止进程，端口 ${port} 已释放`);
+        return port;
+      } else {
+        logger.error(`无法终止进程，寻找其他端口`);
+        return await this.findAlternativePort(port);
+      }
+    }
+
+    // 5. 无法清理，寻找其他端口
+    logger.warn(`无法清理端口 ${port} (进程: ${processInfo.name})，寻找其他可用端口`);
+    return await this.findAlternativePort(port);
+  }
+
+  /**
+   * 寻找替代端口
+   */
+  async findAlternativePort(preferredPort: number): Promise<number> {
+    logger.info(`寻找端口 ${preferredPort} 的替代方案`);
+
+    // 尝试相近的端口
+    const nearbyPorts = [
+      preferredPort + 1,
+      preferredPort + 2,
+      preferredPort + 3,
+      preferredPort - 1,
+      preferredPort - 2,
+      preferredPort - 3
+    ].filter(p => p > 1024 && p < 65535);
+
+    for (const port of nearbyPorts) {
+      if (await this.isPortAvailable(port)) {
+        logger.info(`找到相近的可用端口: ${port}`);
+        return port;
+      }
+    }
+
+    // 在端口范围内查找
+    return await this.findAvailablePort();
+  }
+
+  /**
+   * 查找可用端口（传统方法）
    */
   async findAvailablePort(preferredPort?: number): Promise<number> {
     // 如果指定了首选端口，先尝试该端口
@@ -113,7 +196,7 @@ export class PortManager {
     throw new MCPError(
       'No available ports found',
       'NO_AVAILABLE_PORTS',
-      { 
+      {
         preferredPort,
         rangeStart: this.PORT_RANGE_START,
         rangeEnd: this.PORT_RANGE_END,

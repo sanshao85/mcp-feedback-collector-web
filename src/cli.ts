@@ -84,18 +84,7 @@ async function startMCPServer(options: {
       await server.start();
     }
     
-    // 处理优雅关闭
-    process.on('SIGINT', async () => {
-      logger.info('收到SIGINT信号，正在关闭服务器...');
-      await server.stop();
-      process.exit(0);
-    });
-    
-    process.on('SIGTERM', async () => {
-      logger.info('收到SIGTERM信号，正在关闭服务器...');
-      await server.stop();
-      process.exit(0);
-    });
+    // 注意：优雅关闭处理已在WebServer中实现，这里不需要重复处理
     
   } catch (error) {
     if (error instanceof MCPError) {
