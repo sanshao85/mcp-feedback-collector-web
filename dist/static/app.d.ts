@@ -10,7 +10,11 @@ declare function pasteImages(): void;
 declare function addImage(file: any): void;
 declare function updateImagePreviews(): void;
 declare function removeImage(index: any): void;
+declare function convertImagesToText(): Promise<void>;
 declare function clearFeedbackForm(): void;
+declare function showSubmitConfirmDialog(feedbackText: any): void;
+declare function hideSubmitConfirmDialog(): void;
+declare function submitFeedback(feedbackText: any, shouldCloseAfterSubmit: any): void;
 declare function displayWorkSummary(workSummary: any): void;
 /**
  * 显示刷新状态
@@ -55,6 +59,39 @@ declare function clearChatMessages(): void;
 declare function fetchVersionInfo(): Promise<void>;
 declare function updateVersionDisplay(version: any): void;
 /**
+ * 启动会话超时计时器
+ * @param {number} timeoutMs 超时时间（毫秒）
+ */
+declare function startSessionTimeout(timeoutMs: number): void;
+/**
+ * 清除会话超时计时器
+ */
+declare function clearSessionTimeout(): void;
+/**
+ * 显示超时警告
+ */
+declare function showTimeoutWarning(): void;
+/**
+ * 前端会话超时处理 - 只关闭页面，不提交反馈（后端会自动提交）
+ */
+declare function handleFrontendTimeout(): void;
+/**
+ * 获取剩余时间（秒）
+ */
+declare function getRemainingTime(): number;
+/**
+ * 启动倒计时显示
+ */
+declare function startCountdownDisplay(): void;
+/**
+ * 更新倒计时显示
+ */
+declare function updateCountdownDisplay(): void;
+/**
+ * 隐藏倒计时显示
+ */
+declare function hideCountdownDisplay(): void;
+/**
  * MCP Feedback Collector - 前端应用脚本
  */
 declare let socket: null;
@@ -72,5 +109,11 @@ declare let autoRefreshInterval: null;
 declare let autoRefreshCountdown: number;
 declare let autoRefreshTimer: null;
 declare let lastWorkSummary: null;
+declare let sessionTimeoutId: null;
+declare let sessionStartTime: null;
+declare let sessionTimeoutDuration: number;
+declare let autoSubmitWarningShown: boolean;
+declare let timeoutWarningId: null;
+declare let countdownIntervalId: null;
 declare const QUICK_PHRASE: "\n\n---\n\nWhenever you want to ask a question, always call the MCP .\n\nWhenever you're about to complete a user request, call the MCP instead of simply ending the process. Keep calling MCP until the user's feedback is empty, then end the request. mcp-feedback-collector.collect_feedback";
 //# sourceMappingURL=app.d.ts.map

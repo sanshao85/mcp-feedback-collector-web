@@ -21,7 +21,7 @@
           ▼                      ▼                      ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Port Manager  │    │ Session Storage │    │ Image Processor │
-│   - 端口检测     │    │ - 会话管理       │    │ - 图片处理       │
+│   - 端口检测     │    │ - 会话管理       │    │ - 图片处理(Jimp) │
 │   - 进程清理     │    │ - 数据存储       │    │ - 格式转换       │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
@@ -86,6 +86,7 @@ GET  /api/version         # 版本信息
 POST /api/test-session    # 创建测试会话
 GET  /api/session/:id     # 获取会话信息
 POST /api/feedback        # 提交反馈
+POST /api/convert-images  # 图片转文字API
 ```
 
 ### WebSocket事件
@@ -122,6 +123,10 @@ MCP_STARTUP_PORT_CLEANUP=true        # 启动时端口清理
 MCP_MAX_FILE_SIZE=10485760           # 最大文件大小(10MB)
 MCP_ALLOWED_FILE_TYPES=jpg,jpeg,png,gif,webp  # 允许的文件类型
 
+# 图片转文字功能
+MCP_ENABLE_IMAGE_TO_TEXT=true        # 启用图片转文字功能
+MCP_IMAGE_TO_TEXT_PROMPT="请详细描述这张图片的内容，包括主要元素、颜色、布局、文字等信息。"
+
 # 安全配置
 MCP_CORS_ORIGIN=*                    # CORS允许的源
 MCP_RATE_LIMIT_WINDOW=900000         # 速率限制窗口(15分钟)
@@ -136,9 +141,13 @@ MCP_RATE_LIMIT_MAX=100               # 速率限制最大请求数
 
 ## 🖼️ 图片处理
 
+### 技术栈
+- **处理库**: Jimp (纯JavaScript，无需编译)
+- **优势**: 跨平台兼容，安装简单，无原生依赖
+
 ### 支持格式
 - **输入**: JPEG, PNG, GIF, WebP, BMP
-- **输出**: JPEG, PNG, WebP
+- **输出**: JPEG, PNG (WebP降级为JPEG)
 - **最大尺寸**: 2048x2048像素
 - **最大文件**: 10MB
 
@@ -240,4 +249,4 @@ curl http://localhost:5000/api/status
 - [Node.js文档](https://nodejs.org/docs/)
 - [Socket.IO文档](https://socket.io/docs/)
 - [Express.js文档](https://expressjs.com/)
-- [Sharp图片处理](https://sharp.pixelplumbing.com/)
+- [Jimp图片处理](https://github.com/jimp-dev/jimp)

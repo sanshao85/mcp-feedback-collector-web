@@ -17,12 +17,16 @@ export interface Config {
     killProcessOnPortConflict?: boolean | undefined;
     useFixedUrl?: boolean | undefined;
     cleanupPortOnStart?: boolean | undefined;
+    enableImageToText?: boolean | undefined;
+    imageToTextPrompt?: string | undefined;
 }
 export interface FeedbackData {
     text?: string;
     images?: ImageData[];
+    imageDescriptions?: string[];
     timestamp: number;
     sessionId: string;
+    shouldCloseAfterSubmit?: boolean;
 }
 export interface ImageData {
     name: string;
@@ -111,5 +115,17 @@ export interface APIConfig {
     model: string;
     temperature?: number;
     maxTokens?: number;
+}
+export interface ConvertImagesRequest {
+    images: {
+        name: string;
+        type: string;
+        data: string;
+    }[];
+}
+export interface ConvertImagesResponse {
+    success: boolean;
+    descriptions?: string[];
+    error?: string;
 }
 //# sourceMappingURL=index.d.ts.map

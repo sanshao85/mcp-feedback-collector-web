@@ -1,7 +1,8 @@
 /**
  * MCP Feedback Collector - 图片处理工具
+ * 使用 Jimp 库进行图片处理和优化
  */
-import sharp from 'sharp';
+import Jimp from 'jimp';
 import { MCPError } from '../types/index.js';
 import { logger } from './logger.js';
 /**
@@ -55,13 +56,17 @@ export class ImageProcessor {
             // 移除Base64前缀
             const base64Content = base64Data.replace(/^data:image\/[^;]+;base64,/, '');
             const buffer = Buffer.from(base64Content, 'base64');
-            const metadata = await sharp(buffer).metadata();
+            // 使用 Jimp 读取图片信息
+            const image = await Jimp.read(buffer);
+            // 从 MIME 类型推断格式
+            const mimeType = image.getMIME();
+            const format = mimeType.split('/')[1] || 'unknown';
             return {
-                format: metadata.format || 'unknown',
-                width: metadata.width || 0,
-                height: metadata.height || 0,
+                format: format,
+                width: image.getWidth(),
+                height: image.getHeight(),
                 size: buffer.length,
-                hasAlpha: metadata.hasAlpha || false
+                hasAlpha: image.hasAlpha()
             };
         }
         catch (error) {
@@ -77,34 +82,45 @@ export class ImageProcessor {
             const base64Content = base64Data.replace(/^data:image\/[^;]+;base64,/, '');
             const buffer = Buffer.from(base64Content, 'base64');
             const { maxWidth = this.maxWidth, maxHeight = this.maxHeight, quality = 85, format = 'jpeg' } = options;
-            let processor = sharp(buffer);
+            // 使用 Jimp 读取图片
+            let image = await Jimp.read(buffer);
             // 调整尺寸
-            const metadata = await processor.metadata();
-            if (metadata.width && metadata.height) {
-                if (metadata.width > maxWidth || metadata.height > maxHeight) {
-                    processor = processor.resize(maxWidth, maxHeight, {
-                        fit: 'inside',
-                        withoutEnlargement: true
-                    });
-                }
+            const originalWidth = image.getWidth();
+            const originalHeight = image.getHeight();
+            if (originalWidth > maxWidth || originalHeight > maxHeight) {
+                // 计算缩放比例，保持宽高比
+                const widthRatio = maxWidth / originalWidth;
+                const heightRatio = maxHeight / originalHeight;
+                const ratio = Math.min(widthRatio, heightRatio);
+                const newWidth = Math.floor(originalWidth * ratio);
+                const newHeight = Math.floor(originalHeight * ratio);
+                image = image.resize(newWidth, newHeight);
             }
-            // 转换格式和压缩
+            // 设置质量
+            image = image.quality(quality);
+            // 转换格式和获取buffer
             let outputBuffer;
+            let mimeType;
             switch (format) {
                 case 'jpeg':
-                    outputBuffer = await processor.jpeg({ quality }).toBuffer();
+                    outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+                    mimeType = Jimp.MIME_JPEG;
                     break;
                 case 'png':
-                    outputBuffer = await processor.png({ compressionLevel: 9 }).toBuffer();
+                    outputBuffer = await image.getBufferAsync(Jimp.MIME_PNG);
+                    mimeType = Jimp.MIME_PNG;
                     break;
                 case 'webp':
-                    outputBuffer = await processor.webp({ quality }).toBuffer();
+                    // Jimp 可能不支持 WebP，降级到 JPEG
+                    outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+                    mimeType = Jimp.MIME_JPEG;
                     break;
                 default:
-                    outputBuffer = await processor.jpeg({ quality }).toBuffer();
+                    outputBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+                    mimeType = Jimp.MIME_JPEG;
             }
             // 转换回Base64
-            const compressedBase64 = `data:image/${format};base64,${outputBuffer.toString('base64')}`;
+            const compressedBase64 = `data:${mimeType};base64,${outputBuffer.toString('base64')}`;
             logger.debug(`图片压缩完成: ${buffer.length} -> ${outputBuffer.length} bytes`);
             return compressedBase64;
         }
@@ -185,13 +201,13 @@ export class ImageProcessor {
         try {
             const base64Content = base64Data.replace(/^data:image\/[^;]+;base64,/, '');
             const buffer = Buffer.from(base64Content, 'base64');
-            const thumbnailBuffer = await sharp(buffer)
-                .resize(size, size, {
-                fit: 'cover',
-                position: 'center'
-            })
-                .jpeg({ quality: 80 })
-                .toBuffer();
+            // 使用 Jimp 生成缩略图
+            const image = await Jimp.read(buffer);
+            // 裁剪为正方形并调整大小
+            const thumbnail = image
+                .cover(size, size) // 类似 Sharp 的 fit: 'cover'
+                .quality(80);
+            const thumbnailBuffer = await thumbnail.getBufferAsync(Jimp.MIME_JPEG);
             return `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
         }
         catch (error) {

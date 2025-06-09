@@ -23,6 +23,14 @@ let autoRefreshCountdown = 10;  // 改为10秒
 let autoRefreshTimer = null;
 let lastWorkSummary = null;  // 记录上次的工作汇报内容
 
+// 超时自动提交相关变量
+let sessionTimeoutId = null;
+let sessionStartTime = null;
+let sessionTimeoutDuration = 300000; // 默认5分钟，将从服务器获取
+let autoSubmitWarningShown = false;
+let timeoutWarningId = null;
+let countdownIntervalId = null; // 倒计时显示定时器
+
 // 获取API配置
 async function loadChatConfig() {
     try {
@@ -164,10 +172,28 @@ function initializeSocket() {
         // 清理所有之前的状态消息（包括"已获取最新工作汇报"提示）
         clearAllStatusMessages();
 
-        // 显示持续的成功消息（不自动关闭窗口）
-        showStatusMessage('success', '✅ 反馈提交成功！感谢您的宝贵意见。窗口将保持打开状态，您可以继续使用。');
+        // 根据用户选择决定后续操作
+        if (data.shouldCloseAfterSubmit) {
+            // 用户选择提交并关闭页面
+            showStatusMessage('success', '✅ 反馈提交成功！感谢您的宝贵意见。页面将在3秒后自动关闭。');
+            console.log('反馈提交成功，3秒后关闭页面');
 
-        console.log('反馈提交成功，窗口保持打开状态');
+            // 3秒倒计时后关闭页面
+            let countdown = 3;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    showStatusMessage('success', `✅ 反馈提交成功！感谢您的宝贵意见。页面将在${countdown}秒后自动关闭。`);
+                } else {
+                    clearInterval(countdownInterval);
+                    window.close();
+                }
+            }, 1000);
+        } else {
+            // 用户选择提交但保持页面打开
+            showStatusMessage('success', '✅ 反馈提交成功！感谢您的宝贵意见。页面将保持打开状态，您可以继续使用。');
+            console.log('反馈提交成功，页面保持打开状态');
+        }
     });
 
     socket.on('feedback_error', function(data) {
@@ -191,6 +217,14 @@ function initializeSocket() {
         if (data.session_id) {
             currentFeedbackSession = data.session_id;
             console.log('固定URL模式 - 分配的会话ID:', data.session_id);
+            console.log('接收到的超时时间:', data.timeout, '默认超时时间:', sessionTimeoutDuration);
+
+            // 启动超时自动提交计时器
+            const timeoutToUse = data.timeout || sessionTimeoutDuration;
+            // 前端超时时间比后端超时时间提前2秒，确保能在后端超时前提交
+            const frontendTimeout = Math.max(timeoutToUse - 2000, timeoutToUse * 0.9);
+            console.log('使用的超时时间:', timeoutToUse, '前端超时时间:', frontendTimeout);
+            startSessionTimeout(frontendTimeout);
 
             // 如果有工作汇报，显示它
             if (data.work_summary) {
@@ -400,6 +434,8 @@ function addImage(file) {
 
 function updateImagePreviews() {
     const container = document.getElementById('image-previews');
+    const convertBtn = document.getElementById('convert-images-btn');
+
     container.innerHTML = '';
 
     selectedImages.forEach((image, index) => {
@@ -411,6 +447,18 @@ function updateImagePreviews() {
         `;
         container.appendChild(previewDiv);
     });
+
+    // 显示或隐藏图片转文本按钮
+    if (selectedImages.length > 0) {
+        convertBtn.style.display = 'inline-block';
+    } else {
+        convertBtn.style.display = 'none';
+        // 隐藏图片描述区域
+        const descriptionsArea = document.getElementById('image-descriptions');
+        if (descriptionsArea) {
+            descriptionsArea.style.display = 'none';
+        }
+    }
 }
 
 function removeImage(index) {
@@ -418,10 +466,84 @@ function removeImage(index) {
     updateImagePreviews();
 }
 
+// 图片转文字功能
+async function convertImagesToText() {
+    const btn = document.getElementById('convert-images-btn');
+    const descriptionsArea = document.getElementById('image-descriptions');
+    const descriptionsContent = document.getElementById('descriptions-content');
+
+    if (selectedImages.length === 0) {
+        showStatusMessage('warning', '请先上传图片');
+        return;
+    }
+
+    // 显示加载状态
+    const originalText = btn.textContent;
+    btn.textContent = '🔄 转换中...';
+    btn.disabled = true;
+
+    try {
+        // 准备图片数据
+        const images = selectedImages.map(img => ({
+            name: img.name,
+            type: img.type,
+            data: img.data
+        }));
+
+        // 调用后端API转换图片
+        const response = await fetch('/api/convert-images', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ images })
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.descriptions) {
+            // 显示转换结果
+            descriptionsContent.innerHTML = '';
+            result.descriptions.forEach((desc, index) => {
+                const descDiv = document.createElement('div');
+                descDiv.className = 'description-item';
+                descDiv.innerHTML = `
+                    <div class="description-header">
+                        <strong>图片 ${index + 1}: ${selectedImages[index].name}</strong>
+                    </div>
+                    <textarea class="description-text" rows="3" placeholder="图片描述...">${desc}</textarea>
+                `;
+                descriptionsContent.appendChild(descDiv);
+            });
+
+            descriptionsArea.style.display = 'block';
+            showStatusMessage('success', '图片转换完成，您可以编辑描述内容');
+        } else {
+            showStatusMessage('error', '图片转换失败: ' + (result.error || '未知错误'));
+        }
+    } catch (error) {
+        console.error('图片转换出错:', error);
+        showStatusMessage('error', '图片转换出错: ' + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
 function clearFeedbackForm() {
     document.getElementById('feedback-text').value = '';
     selectedImages = [];
     updateImagePreviews();
+
+    // 清空图片描述区域
+    const descriptionsArea = document.getElementById('image-descriptions');
+    const descriptionsContent = document.getElementById('descriptions-content');
+    if (descriptionsArea) {
+        descriptionsArea.style.display = 'none';
+    }
+    if (descriptionsContent) {
+        descriptionsContent.innerHTML = '';
+    }
 }
 
 // 快捷语内容
@@ -477,10 +599,120 @@ document.getElementById('feedback-form').addEventListener('submit', function(e) 
         return;
     }
 
+    // 显示提交确认对话框
+    showSubmitConfirmDialog(feedbackText);
+});
+
+// 显示提交确认对话框
+function showSubmitConfirmDialog(feedbackText) {
+    // 防止重复显示对话框
+    if (document.getElementById('submit-confirm-dialog')) {
+        return;
+    }
+
+    // 创建对话框HTML
+    const dialogHTML = `
+        <div id="submit-confirm-dialog" class="dialog-overlay">
+            <div class="dialog-content">
+                <div class="dialog-header">
+                    <h3>📤 提交反馈确认</h3>
+                </div>
+                <div class="dialog-body">
+                    <p>请选择提交后的操作：</p>
+                    <div class="dialog-options">
+                        <button id="submit-and-close-btn" class="dialog-btn primary">
+                            🚪 提交并关闭页面
+                        </button>
+                        <button id="submit-and-keep-btn" class="dialog-btn secondary">
+                            📝 提交但保持页面打开
+                        </button>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button id="cancel-submit-btn" class="dialog-btn cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 添加对话框到页面
+    document.body.insertAdjacentHTML('beforeend', dialogHTML);
+
+    // 绑定事件
+    document.getElementById('submit-and-close-btn').onclick = () => {
+        hideSubmitConfirmDialog();
+        submitFeedback(feedbackText, true); // 提交并关闭
+    };
+
+    document.getElementById('submit-and-keep-btn').onclick = () => {
+        hideSubmitConfirmDialog();
+        submitFeedback(feedbackText, false); // 提交但保持打开
+    };
+
+    document.getElementById('cancel-submit-btn').onclick = () => {
+        hideSubmitConfirmDialog();
+    };
+
+    // 点击背景关闭对话框
+    document.getElementById('submit-confirm-dialog').onclick = (e) => {
+        if (e.target.id === 'submit-confirm-dialog') {
+            hideSubmitConfirmDialog();
+        }
+    };
+
+    // 添加键盘支持 - ESC键关闭对话框
+    const handleKeydown = (e) => {
+        if (e.key === 'Escape') {
+            hideSubmitConfirmDialog();
+            document.removeEventListener('keydown', handleKeydown);
+        }
+    };
+    document.addEventListener('keydown', handleKeydown);
+
+    // 自动聚焦到第一个按钮，提升键盘导航体验
+    setTimeout(() => {
+        const firstBtn = document.getElementById('submit-and-close-btn');
+        if (firstBtn) {
+            firstBtn.focus();
+        }
+    }, 100);
+}
+
+// 隐藏提交确认对话框
+function hideSubmitConfirmDialog() {
+    const dialog = document.getElementById('submit-confirm-dialog');
+    if (dialog) {
+        // 清理键盘事件监听器
+        const handleKeydown = (e) => {
+            if (e.key === 'Escape') {
+                hideSubmitConfirmDialog();
+                document.removeEventListener('keydown', handleKeydown);
+            }
+        };
+        document.removeEventListener('keydown', handleKeydown);
+
+        dialog.remove();
+    }
+}
+
+// 实际提交反馈的函数
+function submitFeedback(feedbackText, shouldCloseAfterSubmit) {
+    // 清除超时计时器（用户已手动提交）
+    clearSessionTimeout();
+
     // 禁用提交按钮
     const submitBtn = document.getElementById('submit-feedback-btn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '提交中...';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '提交中...';
+    }
+
+    // 获取图片描述
+    const imageDescriptions = [];
+    const descriptionTextareas = document.querySelectorAll('.description-text');
+    descriptionTextareas.forEach(textarea => {
+        imageDescriptions.push(textarea.value || '');
+    });
 
     // 发送反馈数据
     const feedbackData = {
@@ -491,8 +723,10 @@ document.getElementById('feedback-form').addEventListener('submit', function(e) 
             size: img.size,
             type: img.type
         })),
+        imageDescriptions: imageDescriptions.length > 0 ? imageDescriptions : undefined, // 包含图片描述
         timestamp: Date.now(),
-        sessionId: currentFeedbackSession
+        sessionId: currentFeedbackSession,
+        shouldCloseAfterSubmit: shouldCloseAfterSubmit // 添加关闭标志
     };
 
     console.log('发送反馈数据:', feedbackData);
@@ -500,10 +734,14 @@ document.getElementById('feedback-form').addEventListener('submit', function(e) 
 
     // 5秒后重新启用按钮（防止卡住）
     setTimeout(() => {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '提交反馈';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '提交反馈';
+        }
     }, 5000);
-});
+}
+
+
 
 // 显示工作汇报内容
 function displayWorkSummary(workSummary) {
@@ -1060,5 +1298,178 @@ function updateVersionDisplay(version) {
     const versionElement = document.getElementById('version-number');
     if (versionElement && version) {
         versionElement.textContent = version;
+    }
+}
+
+// ==================== 超时自动提交功能 ====================
+
+/**
+ * 启动会话超时计时器
+ * @param {number} timeoutMs 超时时间（毫秒）
+ */
+function startSessionTimeout(timeoutMs) {
+    // 清除之前的计时器
+    clearSessionTimeout();
+
+    sessionStartTime = Date.now();
+    sessionTimeoutDuration = timeoutMs;
+    autoSubmitWarningShown = false;
+
+    console.log(`启动会话超时计时器: ${timeoutMs}ms (${timeoutMs/1000}秒)`);
+
+    // 启动倒计时显示
+    startCountdownDisplay();
+
+    // 在超时前5秒显示警告
+    const warningTime = Math.max(timeoutMs - 5000, timeoutMs * 0.9); // 至少在90%时间后警告
+    timeoutWarningId = setTimeout(() => {
+        showTimeoutWarning();
+    }, warningTime);
+
+    // 设置前端超时计时器（只关闭页面，不提交反馈）
+    sessionTimeoutId = setTimeout(() => {
+        handleFrontendTimeout();
+    }, timeoutMs);
+}
+
+/**
+ * 清除会话超时计时器
+ */
+function clearSessionTimeout() {
+    if (sessionTimeoutId) {
+        clearTimeout(sessionTimeoutId);
+        sessionTimeoutId = null;
+    }
+    if (timeoutWarningId) {
+        clearTimeout(timeoutWarningId);
+        timeoutWarningId = null;
+    }
+    if (countdownIntervalId) {
+        clearInterval(countdownIntervalId);
+        countdownIntervalId = null;
+    }
+    autoSubmitWarningShown = false;
+
+    // 隐藏倒计时显示
+    hideCountdownDisplay();
+}
+
+/**
+ * 显示超时警告
+ */
+function showTimeoutWarning() {
+    if (autoSubmitWarningShown) return;
+
+    autoSubmitWarningShown = true;
+    const remainingTime = Math.max(0, Math.ceil((sessionTimeoutDuration - (Date.now() - sessionStartTime)) / 1000));
+
+    showStatusMessage('warning', `⏰ 会话即将在 ${remainingTime} 秒后超时，如未提交反馈将自动提交忙碌回复`, false);
+    console.log(`显示超时警告，剩余时间: ${remainingTime}秒`);
+}
+
+/**
+ * 前端会话超时处理 - 只关闭页面，不提交反馈（后端会自动提交）
+ */
+function handleFrontendTimeout() {
+    if (!currentFeedbackSession) {
+        console.log('无活跃会话，跳过前端超时处理');
+        return;
+    }
+
+    console.log('前端会话超时，准备关闭页面（后端将自动提交忙碌回复）');
+
+    // 清理所有状态消息
+    clearAllStatusMessages();
+
+    // 显示超时提示
+    showStatusMessage('info', '⏰ 会话超时，页面将在3秒后自动关闭。后端将自动提交忙碌回复。', false);
+
+    // 3秒倒计时后关闭页面
+    let countdown = 3;
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            showStatusMessage('info', `⏰ 会话超时，页面将在${countdown}秒后自动关闭。后端将自动提交忙碌回复。`, false);
+        } else {
+            clearInterval(countdownInterval);
+            console.log('前端超时，关闭页面');
+            window.close();
+        }
+    }, 1000);
+
+    // 清除超时计时器
+    clearSessionTimeout();
+}
+
+/**
+ * 获取剩余时间（秒）
+ */
+function getRemainingTime() {
+    if (!sessionStartTime || !sessionTimeoutDuration) {
+        return 0;
+    }
+    return Math.max(0, Math.ceil((sessionTimeoutDuration - (Date.now() - sessionStartTime)) / 1000));
+}
+
+// ==================== 倒计时显示功能 ====================
+
+/**
+ * 启动倒计时显示
+ */
+function startCountdownDisplay() {
+    const countdownEl = document.getElementById('timeout-countdown');
+    if (!countdownEl) return;
+
+    // 显示倒计时元素
+    countdownEl.style.display = 'block';
+
+    // 启动倒计时更新定时器
+    countdownIntervalId = setInterval(() => {
+        updateCountdownDisplay();
+    }, 1000);
+
+    // 立即更新一次
+    updateCountdownDisplay();
+}
+
+/**
+ * 更新倒计时显示
+ */
+function updateCountdownDisplay() {
+    const countdownEl = document.getElementById('timeout-countdown');
+    if (!countdownEl) return;
+
+    const remainingTime = getRemainingTime();
+
+    if (remainingTime <= 0) {
+        hideCountdownDisplay();
+        return;
+    }
+
+    // 格式化时间显示
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = remainingTime % 60;
+    const timeText = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds}`;
+
+    // 根据剩余时间设置不同的样式和文本
+    if (remainingTime <= 10) {
+        countdownEl.className = 'timeout-countdown critical';
+        countdownEl.textContent = `⚠️ 会话将在 ${timeText} 秒后超时`;
+    } else if (remainingTime <= 30) {
+        countdownEl.className = 'timeout-countdown warning';
+        countdownEl.textContent = `⏰ 会话将在 ${timeText} 秒后超时`;
+    } else {
+        countdownEl.className = 'timeout-countdown';
+        countdownEl.textContent = `⏱️ 会话剩余时间: ${timeText}`;
+    }
+}
+
+/**
+ * 隐藏倒计时显示
+ */
+function hideCountdownDisplay() {
+    const countdownEl = document.getElementById('timeout-countdown');
+    if (countdownEl) {
+        countdownEl.style.display = 'none';
     }
 }

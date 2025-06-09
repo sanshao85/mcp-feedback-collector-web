@@ -13,6 +13,7 @@ import { MCPError } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 import { PortManager } from '../utils/port-manager.js';
 import { ImageProcessor } from '../utils/image-processor.js';
+import { ImageToTextService } from '../utils/image-to-text-service.js';
 import { performanceMonitor } from '../utils/performance-monitor.js';
 import { SessionStorage } from '../utils/session-storage.js';
 import { VERSION } from '../index.js';
@@ -28,6 +29,7 @@ export class WebServer {
     isServerRunning = false;
     portManager;
     imageProcessor;
+    imageToTextService;
     sessionStorage;
     constructor(config) {
         this.config = config;
@@ -37,6 +39,7 @@ export class WebServer {
             maxWidth: 2048,
             maxHeight: 2048
         });
+        this.imageToTextService = new ImageToTextService(config);
         this.sessionStorage = new SessionStorage();
         // 创建Express应用
         this.app = express();
@@ -175,6 +178,42 @@ export class WebServer {
             const report = performanceMonitor.getFormattedReport();
             res.type('text/plain').send(report);
         });
+        // 图片转文字API
+        this.app.post('/api/convert-images', async (req, res) => {
+            try {
+                const { images } = req.body;
+                if (!images || !Array.isArray(images) || images.length === 0) {
+                    res.status(400).json({
+                        success: false,
+                        error: '请提供要转换的图片数据'
+                    });
+                    return;
+                }
+                // 检查功能是否启用
+                if (!this.imageToTextService.isEnabled()) {
+                    res.status(400).json({
+                        success: false,
+                        error: '图片转文字功能未启用或API密钥未配置'
+                    });
+                    return;
+                }
+                logger.info(`开始转换 ${images.length} 张图片为文字`);
+                // 批量转换图片
+                const descriptions = await this.imageToTextService.convertMultipleImages(images);
+                logger.info(`图片转文字完成，共转换 ${descriptions.length} 张图片`);
+                res.json({
+                    success: true,
+                    descriptions
+                });
+            }
+            catch (error) {
+                logger.error('图片转文字API错误:', error);
+                res.status(500).json({
+                    success: false,
+                    error: error instanceof Error ? error.message : '图片转文字处理失败'
+                });
+            }
+        });
         // 错误处理中间件
         this.app.use((error, req, res, next) => {
             logger.error('Express错误:', error);
@@ -214,7 +253,8 @@ export class WebServer {
                     logger.info(`为客户端 ${socket.id} 分配会话: ${latestSession.sessionId}`);
                     socket.emit('session_assigned', {
                         session_id: latestSession.sessionId,
-                        work_summary: latestSession.session.workSummary
+                        work_summary: latestSession.session.workSummary,
+                        timeout: latestSession.session.timeout // 传递超时时间（毫秒）
                     });
                 }
                 else {
@@ -331,7 +371,8 @@ export class WebServer {
             // 通知提交成功
             socket.emit('feedback_submitted', {
                 success: true,
-                message: '反馈提交成功'
+                message: '反馈提交成功',
+                shouldCloseAfterSubmit: feedbackData.shouldCloseAfterSubmit || false
             });
             // 完成反馈收集
             if (session.resolve) {
@@ -363,15 +404,10 @@ export class WebServer {
                 reject
             };
             this.sessionStorage.createSession(sessionId, session);
-            // 设置超时
-            const timeoutId = setTimeout(() => {
-                this.sessionStorage.deleteSession(sessionId);
-                reject(new MCPError(`Feedback collection timeout after ${timeoutSeconds} seconds`, 'FEEDBACK_TIMEOUT'));
-            }, timeoutSeconds * 1000);
+            // 注意：超时处理现在由SessionStorage的清理机制处理
             // 打开浏览器
             this.openFeedbackPage(sessionId).catch(error => {
                 logger.error('打开反馈页面失败:', error);
-                clearTimeout(timeoutId);
                 this.sessionStorage.deleteSession(sessionId);
                 reject(error);
             });

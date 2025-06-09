@@ -398,9 +398,47 @@
             color: white;
         }
 
+        .status-message.warning {
+            background: #ff9800;
+            color: white;
+        }
+
         .status-message.info {
             background: #007acc;
             color: white;
+        }
+
+        /* 超时倒计时显示 */
+        .timeout-countdown {
+            position: fixed;
+            top: 60px; /* 调整到连接状态下方 */
+            right: 20px;
+            background: rgba(0, 122, 204, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .timeout-countdown.warning {
+            background: rgba(255, 152, 0, 0.9);
+            animation: pulse 1s infinite;
+        }
+
+        .timeout-countdown.critical {
+            background: rgba(241, 76, 76, 0.9);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
         }
 
         /* 加载状态 - 简化为纯文字显示 */
@@ -408,6 +446,151 @@
             display: inline;
             color: #007acc;
             font-weight: 500;
+        }
+
+        /* 提交确认对话框样式 */
+        .dialog-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .dialog-content {
+            background: #2d2d30;
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            min-width: 400px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.2s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .dialog-content {
+                min-width: 320px;
+                width: 95%;
+                margin: 20px;
+            }
+
+            .dialog-options {
+                flex-direction: column;
+            }
+        }
+
+        .dialog-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .dialog-header h3 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .dialog-body {
+            padding: 20px 24px;
+        }
+
+        .dialog-body p {
+            margin: 0 0 16px;
+            color: #cccccc;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .dialog-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dialog-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .dialog-btn.primary {
+            background: #007acc;
+            color: white;
+        }
+
+        .dialog-btn.primary:hover {
+            background: #005a9e;
+        }
+
+        .dialog-btn.secondary {
+            background: #4ec9b0;
+            color: #1e1e1e;
+        }
+
+        .dialog-btn.secondary:hover {
+            background: #3ba896;
+        }
+
+        .dialog-footer {
+            padding: 16px 24px 20px;
+            border-top: 1px solid #3e3e42;
+            text-align: right;
+        }
+
+        .dialog-btn.cancel {
+            background: transparent;
+            color: #969696;
+            border: 1px solid #3e3e42;
+        }
+
+        .dialog-btn.cancel:hover {
+            background: #3c3c3c;
+            color: #cccccc;
+        }
+
+        /* 焦点样式 */
+        .dialog-btn:focus {
+            outline: 2px solid #007acc;
+            outline-offset: 2px;
         }
 
         /* 聊天界面样式 */
@@ -596,6 +779,48 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #4f4f4f;
         }
+
+        /* 图片描述区域样式 */
+        .image-descriptions {
+            margin-top: 16px;
+        }
+
+        .descriptions-content {
+            margin-top: 8px;
+        }
+
+        .description-item {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+        }
+
+        .description-header {
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .description-text {
+            width: 100%;
+            min-height: 60px;
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            color: #cccccc;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .description-text:focus {
+            outline: none;
+            border-color: #007acc;
+        }
     </style>
 </head>
 <body>
@@ -632,6 +857,9 @@
 
         <!-- 状态消息区域 -->
         <div id="status-messages"></div>
+
+        <!-- 超时倒计时显示 -->
+        <div id="timeout-countdown" class="timeout-countdown" style="display: none;"></div>
 
         <!-- 工作汇报内容区域 -->
         <div id="report-content" class="content-area active">
@@ -705,6 +933,18 @@
 
                             <div class="image-preview-area">
                                 <div class="image-previews" id="image-previews"></div>
+                                <!-- 图片转文本按钮 -->
+                                <button type="button" class="toolbar-btn" id="convert-images-btn" onclick="convertImagesToText()" style="display: none; margin-top: 8px;">
+                                    📄 图片转文本
+                                </button>
+                            </div>
+
+                            <!-- 图片描述显示区域 -->
+                            <div class="image-descriptions" id="image-descriptions" style="display: none;">
+                                <label class="form-label">📄 图片描述内容</label>
+                                <div class="descriptions-content" id="descriptions-content">
+                                    <!-- 动态显示转换结果 -->
+                                </div>
                             </div>
                         </div>
 

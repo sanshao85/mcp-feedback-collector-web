@@ -61,7 +61,10 @@ export function createDefaultConfig() {
         forcePort: getEnvBoolean('MCP_FORCE_PORT', false),
         killProcessOnPortConflict: getEnvBoolean('MCP_KILL_PORT_PROCESS', false),
         useFixedUrl: getEnvBoolean('MCP_USE_FIXED_URL', true), // 默认启用固定URL
-        cleanupPortOnStart: getEnvBoolean('MCP_CLEANUP_PORT_ON_START', true) // 默认启用端口清理
+        cleanupPortOnStart: getEnvBoolean('MCP_CLEANUP_PORT_ON_START', true), // 默认启用端口清理
+        // 新增：图片转文字功能配置
+        enableImageToText: getEnvBoolean('MCP_ENABLE_IMAGE_TO_TEXT', true),
+        imageToTextPrompt: getEnvVar('MCP_IMAGE_TO_TEXT_PROMPT', '请详细描述这张图片的内容，包括主要元素、颜色、布局、文字等信息。')
     };
 }
 /**
@@ -121,5 +124,7 @@ export function displayConfig(config) {
     console.log(`  Kill Port Process: ${config.killProcessOnPortConflict ? 'enabled' : 'disabled'}`);
     console.log(`  Use Fixed URL: ${config.useFixedUrl ? 'enabled' : 'disabled'}`);
     console.log(`  Cleanup Port On Start: ${config.cleanupPortOnStart ? 'enabled' : 'disabled'}`);
+    console.log(`  Image To Text: ${config.enableImageToText ? 'enabled' : 'disabled'}`);
+    console.log(`  Image To Text Prompt: ${config.imageToTextPrompt ? config.imageToTextPrompt.substring(0, 50) + '...' : 'default'}`);
 }
 //# sourceMappingURL=index.js.map

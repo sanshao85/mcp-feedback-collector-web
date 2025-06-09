@@ -21,14 +21,19 @@ export interface Config {
   killProcessOnPortConflict?: boolean | undefined;  // 自动终止占用进程
   useFixedUrl?: boolean | undefined;         // 使用固定URL，不带会话参数
   cleanupPortOnStart?: boolean | undefined;  // 启动时清理端口
+  // 新增：图片转文字功能配置
+  enableImageToText?: boolean | undefined;   // 启用图片转文字功能
+  imageToTextPrompt?: string | undefined;    // 图片转文字提示词
 }
 
 // 反馈数据类型
 export interface FeedbackData {
   text?: string;
   images?: ImageData[];
+  imageDescriptions?: string[]; // 图片描述文字
   timestamp: number;
   sessionId: string;
+  shouldCloseAfterSubmit?: boolean; // 提交后是否关闭页面
 }
 
 // 图片数据类型
@@ -141,4 +146,20 @@ export interface APIConfig {
   model: string;
   temperature?: number;
   maxTokens?: number;
+}
+
+// 图片转文字请求类型
+export interface ConvertImagesRequest {
+  images: {
+    name: string;
+    type: string;
+    data: string;
+  }[];
+}
+
+// 图片转文字响应类型
+export interface ConvertImagesResponse {
+  success: boolean;
+  descriptions?: string[];
+  error?: string;
 }

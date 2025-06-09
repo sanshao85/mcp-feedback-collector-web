@@ -10,9 +10,7 @@ import { getConfig, displayConfig } from './config/index.js';
 import { logger } from './utils/logger.js';
 import { MCPServer } from './server/mcp-server.js';
 import { MCPError } from './types/index.js';
-
-// 版本信息
-const VERSION = '2.0.8';
+import { VERSION } from './index.js';
 
 // 在最开始检测MCP模式并设置日志级别
 // 改进的MCP模式检测：检查多个条件
@@ -231,6 +229,7 @@ program
   .command('test-feedback')
   .description('测试collect_feedback工具函数')
   .option('-m, --message <message>', '测试工作汇报内容', '这是一个测试工作汇报，用于验证collect_feedback功能是否正常工作。')
+  .option('-t, --timeout <seconds>', '会话超时时间（秒）', '30')
   .action(async (options) => {
     try {
       showWelcome();
@@ -252,8 +251,10 @@ program
       // 创建测试会话
       logger.info('📋 创建测试会话...');
 
+      const timeoutSeconds = parseInt(options.timeout) || 30;
       const testParams = {
-        work_summary: options.message
+        work_summary: options.message,
+        timeout_seconds: timeoutSeconds
       };
 
       try {
@@ -282,7 +283,7 @@ program
           }
 
           logger.info('💡 现在您可以在浏览器中测试完整的反馈流程');
-          logger.info(`⏱️  会话将在 ${config.dialogTimeout} 秒后超时`);
+          logger.info(`⏱️  会话将在 ${timeoutSeconds} 秒后超时`);
 
         } else {
           logger.error('❌ 测试会话创建失败:', result.error);

@@ -19,6 +19,8 @@
 | `MCP_ENABLE_CHAT` | 启用AI对话功能 | `true` | true/false |
 | `MCP_CORS_ORIGIN` | CORS允许的源 | `*` | 任意字符串 |
 | `MCP_MAX_FILE_SIZE` | 最大文件大小（字节） | `10485760` | 1024-104857600 |
+| `MCP_ENABLE_IMAGE_TO_TEXT` | 启用图片转文字功能 | `true` | true/false |
+| `MCP_IMAGE_TO_TEXT_PROMPT` | 图片转文字提示词 | 默认提示词 | 任意字符串 |
 | `LOG_LEVEL` | 日志级别 | `info` | error/warn/info/debug |
 
 ## 🔧 MCP配置示例
@@ -35,7 +37,9 @@
         "MCP_API_KEY": "sk-zhdAJNyzSg1vAeoGhAaY5cnaMgDuvs0Q9H5LirPUuWW7hQGr",
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
-        "MCP_DIALOG_TIMEOUT": "60000"
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "MCP_ENABLE_IMAGE_TO_TEXT": "true",
+        "MCP_IMAGE_TO_TEXT_PROMPT": "请详细描述这张图片的内容，包括主要元素、颜色、布局、文字等信息。"
       }
     }
   }
@@ -141,6 +145,37 @@ collect_feedback("工作汇报内容")
   }
 }
 ```
+
+## 📄 图片转文字功能配置
+
+### 功能说明
+
+图片转文字功能可以将用户上传的图片转换为详细的文字描述，解决部分MCP客户端无法显示图片的兼容性问题。
+
+### 配置选项
+
+```json
+{
+  "env": {
+    "MCP_ENABLE_IMAGE_TO_TEXT": "true",
+    "MCP_IMAGE_TO_TEXT_PROMPT": "请详细描述这张图片的内容，包括主要元素、颜色、布局、文字等信息。"
+  }
+}
+```
+
+### 使用流程
+
+1. **上传图片** - 用户在反馈表单中上传图片
+2. **点击转换** - 点击"📄 图片转文本"按钮
+3. **AI处理** - 使用配置的API和模型分析图片
+4. **预览编辑** - 用户可以查看和编辑AI生成的描述
+5. **提交反馈** - 同时包含原图和文字描述
+
+### 兼容性优势
+
+- **支持图片的客户端**: 可以看到图片和描述
+- **不支持图片的客户端**: 可以看到详细的文字描述
+- **完美兼容**: 满足不同客户端的需求
 
 ## 🔍 配置验证
 

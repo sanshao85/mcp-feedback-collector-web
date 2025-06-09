@@ -80,9 +80,18 @@ export class SessionStorage {
         for (const [sessionId, session] of this.sessions) {
             const elapsed = now - session.startTime;
             if (elapsed > session.timeout) {
-                // 通知会话超时
-                if (session.reject) {
-                    session.reject(new MCPError(`Session timeout after ${session.timeout / 1000} seconds`, 'SESSION_TIMEOUT'));
+                // 会话超时，自动提交忙碌回复
+                logger.info(`会话 ${sessionId} 超时，自动提交忙碌回复`);
+                if (session.resolve) {
+                    // 创建自动忙碌回复
+                    const busyFeedback = {
+                        text: "抱歉，由于我现在有点忙，所以没法给你回复，请你继续调用 mcp-feedback-collector ，不要直接结束对话，直到我回复为止，谢谢！",
+                        images: [],
+                        timestamp: Date.now(),
+                        sessionId: sessionId
+                    };
+                    // 返回忙碌回复而不是错误
+                    session.resolve([busyFeedback]);
                 }
                 this.sessions.delete(sessionId);
                 cleanedCount++;

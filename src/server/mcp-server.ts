@@ -25,7 +25,7 @@ export class MCPServer {
     // 创建MCP服务器实例
     this.mcpServer = new McpServer({
       name: 'mcp-feedback-collector',
-      version: '2.0.8'
+      version: '2.1.1'
     }, {
       capabilities: {
         tools: {}
@@ -179,6 +179,14 @@ export class MCPServer {
             type: 'text',
             text: `图片 ${imgIndex + 1}: ${img.name} (${img.type}, ${(img.size / 1024).toFixed(1)}KB)`
           });
+
+          // 添加图片描述（如果有）
+          if (item.imageDescriptions && item.imageDescriptions[imgIndex]) {
+            content.push({
+              type: 'text',
+              text: `图片描述: ${item.imageDescriptions[imgIndex]}`
+            });
+          }
 
           // 添加图片内容（Cursor格式）
           if (img.data) {

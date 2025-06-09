@@ -14,6 +14,7 @@ export declare class WebServer {
     private isServerRunning;
     private portManager;
     private imageProcessor;
+    private imageToTextService;
     private sessionStorage;
     constructor(config: Config);
     /**

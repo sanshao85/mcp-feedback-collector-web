@@ -1,6 +1,6 @@
 {
   "name": "mcp-feedback-collector",
-  "version": "2.0.8",
+  "version": "2.1.1",
   "description": "基于Node.js的MCP反馈收集器 - 支持AI工作汇报和用户反馈收集",
   "main": "dist/index.js",
   "bin": {
@@ -47,7 +47,9 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
-    "sharp": "^0.32.6",
+    "engine.io": "^6.6.4",
+    "engine.io-parser": "^5.2.3",
+    "jimp": "^0.22.10",
     "open": "^9.1.0",
     "find-free-port": "^2.0.0",
     "dotenv": "^16.3.1",

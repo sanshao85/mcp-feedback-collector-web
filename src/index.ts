@@ -11,4 +11,4 @@ export { logger } from './utils/logger.js';
 export * from './types/index.js';
 
 // 导出版本信息
-export const VERSION = '2.0.8';
+export const VERSION = '2.1.1';

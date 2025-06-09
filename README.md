@@ -13,6 +13,7 @@
 - 🔧 **MCP集成**: 完整支持Model Context Protocol
 - 💬 **AI对话功能**: 集成AI助手，支持文字和图片对话
 - 🖼️ **图片支持**: 完整的图片上传、处理和显示功能
+- 📄 **图片转文字**: AI智能图片描述，提升客户端兼容性
 - 🌐 **跨平台**: 支持Windows、macOS、Linux
 - ⚡ **高性能**: 解决了Python版本的稳定性问题
 
@@ -49,6 +50,7 @@ MCP_DIALOG_TIMEOUT="60000"  # 反馈收集超时时间（秒），范围：10-60
 
 # 功能开关
 MCP_ENABLE_CHAT="true"
+MCP_ENABLE_IMAGE_TO_TEXT="true"  # 启用图片转文字功能
 
 # URL和端口优化配置 (v2.0.7新增)
 MCP_USE_FIXED_URL="true"           # 使用固定URL，不带会话参数 (默认: true)
@@ -101,7 +103,8 @@ mcp-feedback-collector config
         "MCP_API_BASE_URL": "https://api.ssopen.top",
         "MCP_DEFAULT_MODEL": "grok-3",
         "MCP_WEB_PORT": "5050",
-        "MCP_DIALOG_TIMEOUT": "60000"
+        "MCP_DIALOG_TIMEOUT": "60000",
+        "MCP_ENABLE_IMAGE_TO_TEXT": "true"
       }
     }
   }
@@ -204,7 +207,21 @@ Whenever you’re about to complete a user request, call the MCP instead of simp
 - 也可以使用OpenAI官方API：`https://api.openai.com/v1`
 - 或其他兼容OpenAI格式的API服务
 
-## 🆕 最新功能 (v2.0.8)
+## 🆕 最新功能 (v2.1.1)
+
+### � 重大改进：移除 Sharp 依赖
+- **移除 Sharp**: 完全移除 Sharp 原生模块依赖，解决安装困难问题
+- **引入 Jimp**: 使用纯 JavaScript 的 Jimp 库替换，零编译需求
+- **安装简化**: 无需 Python/Visual Studio 编译环境，支持所有平台
+- **功能保持**: 保持相同的图片处理 API 接口，向后兼容
+- **跨平台**: 完美支持 Windows/macOS/Linux/ARM64
+
+### �📄 图片转文字功能
+- **智能图片描述**: AI自动将图片转换为详细文字描述
+- **兼容性提升**: 解决部分MCP客户端无法显示图片的问题
+- **用户可控**: 点击"图片转文本"按钮主动转换
+- **可编辑描述**: 用户可以修改AI生成的图片描述
+- **批量处理**: 支持多张图片同时转换
 
 ### 🎨 UI简化优化
 - **纯文字状态显示**: 移除旋转动画，简洁直观
@@ -217,8 +234,11 @@ Whenever you’re about to complete a user request, call the MCP instead of simp
 - **无缝体验**: 3秒倒计时提示
 
 ### 📝 表单体验改进
+- **智能提交确认**: 提交反馈时弹出确认对话框，用户可选择：
+  - 🚪 **提交并关闭页面**: 适合一次性反馈，提交后自动关闭
+  - 📝 **提交但保持页面打开**: 适合多次反馈或继续使用AI对话
 - **自动清空**: 提交后自动清空输入框
-- **持续可用**: 页面保持打开状态
+- **灵活操作**: 支持取消提交和背景点击关闭
 
 ### 🔗 固定URL模式 (v2.0.7)
 - 使用固定根路径：`http://localhost:5000`
@@ -258,7 +278,8 @@ collect_feedback("我已经完成了代码重构工作，主要改进了性能�
 - **响应式布局**: 支持桌面和移动设备
 - **实时通信**: WebSocket连接状态指示
 - **多模态支持**: 文字+图片组合输入
-- **智能关闭**: 反馈提交后3秒倒计时自动关闭标签页
+- **智能提交确认**: 用户可选择提交后是否关闭页面
+- **灵活操作**: 支持取消提交和多种交互方式
 
 ## 📋 系统要求
 
@@ -421,7 +442,7 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 ## 📊 项目状态
 
-- **当前版本**: v2.0.8
+- **当前版本**: v2.1.1
 - **维护状态**: 积极维护
 - **支持平台**: Windows, macOS, Linux
 

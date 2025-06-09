@@ -5,6 +5,79 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2025-01-09
+
+### 🐛 依赖修复
+**解决问题**: NPM 包运行时出现 `Cannot find module 'engine.io-parser'` 错误
+
+**修复内容**:
+- **显式添加依赖**: 在 package.json 中明确添加 `engine.io` 和 `engine.io-parser`
+- **依赖传递问题**: 解决 socket.io 间接依赖在 NPM 包中缺失的问题
+- **安装稳定性**: 确保 `npx mcp-feedback-collector` 能正常运行
+
+**技术细节**:
+- 添加 `engine.io@^6.6.4` 到 dependencies
+- 添加 `engine.io-parser@^5.2.3` 到 dependencies
+- 重新构建和发布，确保所有依赖正确打包
+
+**影响**:
+- ✅ 修复 NPM 包安装后的运行错误
+- ✅ 提升用户安装和使用成功率
+- ✅ 确保 `npx -y mcp-feedback-collector@latest` 正常工作
+
+## [2.1.0] - 2025-01-09
+
+### 🔧 重大改进：移除 Sharp 依赖
+**解决问题**: Sharp 原生模块安装困难，导致用户部署失败
+
+**核心变更**:
+- **移除 Sharp**: 完全移除 Sharp 原生模块依赖
+- **引入 Jimp**: 使用纯 JavaScript 的 Jimp 库替换
+- **安装简化**: 无需编译环境，支持所有平台
+- **功能保持**: 保持相同的图片处理 API 接口
+
+**技术优势**:
+- ✅ **零编译**: 纯 JavaScript 实现，无需 Python/Visual Studio
+- ✅ **跨平台**: 完美支持 Windows/macOS/Linux/ARM64
+- ✅ **部署简单**: npm install 一步到位
+- ✅ **向后兼容**: 保持相同的功能和配置
+
+**性能说明**:
+- Jimp 处理速度比 Sharp 慢 2-3 倍
+- 对于反馈收集场景，性能影响可忽略
+- 大幅提升用户安装成功率
+
+**迁移指南**:
+- 现有配置无需修改
+- 图片处理功能完全兼容
+- 建议重新安装依赖: `npm install`
+
+### Technical Implementation
+- 更新 `ImageProcessor` 类使用 Jimp 替代 Sharp
+- 保持相同的 API 接口，确保向后兼容
+- 优化图片处理性能和错误处理
+- 更新所有相关文档和示例
+
+## [2.0.9] - 2025-06-08
+
+### Added
+- 🎯 **智能提交确认对话框**: 用户点击"提交反馈"时弹出确认对话框
+  - 🚪 **提交并关闭页面**: 适合一次性反馈，提交后3秒倒计时自动关闭标签页
+  - 📝 **提交但保持页面打开**: 适合多次反馈或继续使用AI对话功能
+  - ❌ **取消提交**: 支持取消操作和背景点击关闭
+- 🎨 **VS Code风格对话框**: 与整体界面风格保持一致的深色主题对话框
+
+### Changed
+- 📋 **用户体验优化**: 提供更灵活的反馈提交选项
+- 🔧 **类型安全**: 添加 `shouldCloseAfterSubmit` 字段到 `FeedbackData` 类型
+- 📚 **文档完善**: 更新用户指南和README，详细说明新功能使用方法
+
+### Technical Implementation
+- 前端：修改 `app.js` 添加确认对话框逻辑和事件处理
+- 后端：更新 `web-server.ts` 支持关闭标志传递
+- 样式：在 `index.html` 中添加对话框CSS样式
+- 类型：扩展 `FeedbackData` 接口支持新字段
+
 ## [2.0.8] - 2025-06-04
 
 ### Added

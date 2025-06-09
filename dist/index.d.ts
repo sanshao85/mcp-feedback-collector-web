@@ -5,5 +5,5 @@ export { MCPServer } from './server/mcp-server.js';
 export { getConfig, createDefaultConfig, validateConfig } from './config/index.js';
 export { logger } from './utils/logger.js';
 export * from './types/index.js';
-export declare const VERSION = "2.0.8";
+export declare const VERSION = "2.1.1";
 //# sourceMappingURL=index.d.ts.map
