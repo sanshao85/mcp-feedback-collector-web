@@ -1,4 +1,5 @@
 declare function loadChatConfig(): Promise<boolean>;
+declare function initializeTheme(): void;
 declare function initializeSocket(): void;
 declare function updateConnectionStatus(status: any, text: any): void;
 declare function showStatusMessage(type: any, message: any, autoRemove?: boolean): HTMLDivElement;
@@ -115,5 +116,4 @@ declare let sessionTimeoutDuration: number;
 declare let autoSubmitWarningShown: boolean;
 declare let timeoutWarningId: null;
 declare let countdownIntervalId: null;
-declare const QUICK_PHRASE: "\n\n---\n\nWhenever you want to ask a question, always call the MCP .\n\nWhenever you're about to complete a user request, call the MCP instead of simply ending the process. Keep calling MCP until the user's feedback is empty, then end the request. mcp-feedback-collector.collect_feedback";
 //# sourceMappingURL=app.d.ts.map

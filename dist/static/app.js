@@ -58,8 +58,41 @@ async function loadChatConfig() {
     }
 }
 
+// 主题切换功能
+function initializeTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('.icon');
+    
+    // 从localStorage读取保存的主题
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        body.classList.add('light-theme');
+        themeIcon.textContent = '☀️';
+    } else {
+        themeIcon.textContent = '🌙';
+    }
+    
+    // 主题切换事件
+    themeToggle.addEventListener('click', function() {
+        body.classList.toggle('light-theme');
+        const isLight = body.classList.contains('light-theme');
+        
+        // 更新图标
+        themeIcon.textContent = isLight ? '☀️' : '🌙';
+        
+        // 保存主题设置到localStorage
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        
+        console.log('主题已切换至:', isLight ? '浅色' : '深色');
+    });
+}
+
 // 初始化应用
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化主题
+    initializeTheme();
+    
     // 加载聊天配置
     loadChatConfig();
 
@@ -546,26 +579,11 @@ function clearFeedbackForm() {
     }
 }
 
-// 快捷语内容
-const QUICK_PHRASE = `
-
----
-
-Whenever you want to ask a question, always call the MCP .
-
-Whenever you're about to complete a user request, call the MCP instead of simply ending the process. Keep calling MCP until the user's feedback is empty, then end the request. mcp-feedback-collector.collect_feedback`;
-
 // 提交反馈
 document.getElementById('feedback-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
     let feedbackText = document.getElementById('feedback-text').value.trim();
-
-    // 检查是否需要附加快捷语
-    const addQuickPhrase = document.getElementById('add-quick-phrase').checked;
-    if (addQuickPhrase && feedbackText) {
-        feedbackText += QUICK_PHRASE;
-    }
 
     console.log('提交反馈:', {
         text: feedbackText,
@@ -741,8 +759,6 @@ function submitFeedback(feedbackText, shouldCloseAfterSubmit) {
     }, 5000);
 }
 
-
-
 // 显示工作汇报内容
 function displayWorkSummary(workSummary) {
     console.log('displayWorkSummary 被调用:', workSummary);
@@ -803,18 +819,18 @@ function displayWorkSummary(workSummary) {
         style.id = 'work-summary-styles';
         style.textContent = `
             .work-summary-content {
-                color: #cccccc;
+                color: var(--text-color);
                 line-height: 1.6;
                 font-size: 13px;
                 white-space: pre-wrap;
                 word-wrap: break-word;
-                background: #1e1e1e;
+                background: var(--background-color);
                 padding: 12px;
                 border-radius: 4px;
-                border: 1px solid #3e3e42;
+                border: 1px solid var(--border-color);
             }
             .ai-work-report {
-                border-left: 3px solid #4ec9b0;
+                border-left: 3px solid var(--success-color);
             }
         `;
         document.head.appendChild(style);
@@ -885,8 +901,6 @@ function refreshWorkSummary() {
         showRefreshStatus('error', '连接已断开，无法刷新');
     }
 }
-
-
 
 /**
  * 开始自动刷新

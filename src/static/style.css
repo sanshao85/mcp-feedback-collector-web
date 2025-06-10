@@ -1,5 +1,315 @@
 /* MCP Feedback Collector - VS Code深色主题样式 */
 
+:root {
+    /* 深色主题变量 */
+    --background-color: #1e1e1e;
+    --text-color: #cccccc;
+    --header-bg: #2d2d30;
+    --border-color: #3e3e42;
+    --card-bg: #252526;
+    --input-bg: #3c3c3c;
+    --input-border: #5a5a5a;
+    --button-primary: #0e639c;
+    --button-primary-hover: #1177bb;
+    --button-secondary: #5a5a5a;
+    --button-secondary-hover: #6e6e6e;
+    --active-border: #0e639c;
+    --text-light: #ffffff;
+    --text-muted: #969696;
+    --success-color: #16825d;
+    --error-color: #f14c4c;
+    --warning-color: #ffcc02;
+    --info-color: #9cdcfe;
+}
+
+/* 浅色主题 */
+.light-theme {
+    --background-color: #f8f9fa;
+    --text-color: #212529;
+    --header-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --input-border: #d1d7db;
+    --button-primary: #0066b8;
+    --button-primary-hover: #004c8a;
+    --button-secondary: #f5f5f5;
+    --button-secondary-hover: #e0e0e0;
+    --active-border: #0066b8;
+    --text-light: #ffffff;  /* 确保在深色背景上有足够对比度 */
+    --text-muted: #6c757d;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --warning-color: #fd7e14;
+    --info-color: #17a2b8;
+}
+
+/* 浅色主题特殊样式覆盖 */
+.light-theme .page-title,
+.light-theme .card-title,
+.light-theme .card h2,
+.light-theme .card h3,
+.light-theme .chat-title,
+.light-theme .feedback-title {
+    color: var(--text-color);
+}
+
+/* 按钮文本颜色 - 确保蓝色背景按钮上的文字为白色 */
+.light-theme .btn-primary,
+.light-theme .refresh-btn,
+.light-theme .send-btn,
+.light-theme button[style*="background: var(--button-primary)"] {
+    color: #ffffff !important;
+}
+
+/* 浅色主题下的连接状态指示器 */
+.light-theme .connection-status.connected {
+    background: var(--success-color);
+    color: #ffffff;
+}
+
+.light-theme .connection-status.disconnected {
+    background: var(--error-color);
+    color: #ffffff;
+}
+
+/* 浅色主题下的状态消息 */
+.light-theme .status-message.success {
+    background: var(--success-color);
+    color: #ffffff;
+}
+
+.light-theme .status-message.error {
+    background: var(--error-color);
+    color: #ffffff;
+}
+
+.light-theme .status-message.warning {
+    background: var(--warning-color);
+    color: #ffffff;
+}
+
+.light-theme .status-message.info {
+    background: var(--info-color);
+    color: #ffffff;
+}
+
+/* 浅色主题下的标签按钮 */
+.light-theme .tab-button {
+    background: transparent;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.light-theme .tab-button:hover {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.light-theme .tab-button.active {
+    background: var(--card-bg);
+    border-bottom-color: var(--active-border);
+    color: var(--text-color);
+}
+
+/* 浅色主题下的输入框和文本区域 */
+.light-theme .form-control,
+.light-theme textarea.form-control {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.light-theme .form-control:focus,
+.light-theme textarea.form-control:focus {
+    border-color: var(--button-primary);
+}
+
+.light-theme .form-control::placeholder,
+.light-theme textarea.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+/* 浅色主题下的图片预览区域 */
+.light-theme .image-preview {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+}
+
+.light-theme .image-item .remove-btn {
+    background: var(--error-color);
+    color: #ffffff;
+}
+
+/* 浅色主题下的版本信息 */
+.light-theme .version-badge {
+    background: var(--button-primary);
+    color: #ffffff;
+}
+
+.light-theme .github-link {
+    color: var(--text-color);
+}
+
+.light-theme .github-link:hover {
+    color: var(--button-primary);
+}
+
+/* 浅色主题下的滚动条 */
+.light-theme ::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+.light-theme ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border: 3px solid var(--background-color);
+}
+
+.light-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* 确认对话框样式 */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+            
+.dialog-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+            
+.dialog-header {
+    padding: 16px;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+            
+.dialog-header h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+            
+.dialog-body {
+    padding: 20px;
+    color: var(--text-color);
+}
+
+.dialog-body p {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+            
+.dialog-footer {
+    padding: 12px 16px;
+    background: var(--header-bg);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+            
+.dialog-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0;
+}
+            
+.dialog-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+            
+.dialog-btn.primary {
+    background: var(--button-primary);
+    color: var(--text-light);
+}
+
+.dialog-btn.primary:hover {
+    background: var(--button-primary-hover);
+}
+            
+.dialog-btn.secondary {
+    background: var(--success-color);
+    color: var(--text-light);
+}
+
+.dialog-btn.secondary:hover {
+    opacity: 0.9;
+}
+            
+.dialog-btn.cancel {
+    background: var(--button-secondary);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.dialog-btn.cancel:hover {
+    background: var(--button-secondary-hover);
+}
+
+/* 浅色主题下的对话框特殊样式 */
+.light-theme .dialog-overlay {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.light-theme .dialog-content {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.light-theme .dialog-header h3 {
+    color: var(--text-color);
+}
+
+.light-theme .dialog-body,
+.light-theme .dialog-body p {
+    color: var(--text-color);
+}
+
+.light-theme .dialog-btn.primary {
+    background: var(--button-primary);
+    color: var(--text-light);
+}
+
+.light-theme .dialog-btn.secondary {
+    background: var(--success-color);
+    color: var(--text-light);
+}
+
+.light-theme .dialog-btn.cancel {
+    background: var(--button-secondary);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,8 +318,8 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1e1e1e;
-    color: #cccccc;
+    background-color: var(--background-color);
+    color: var(--text-color);
     line-height: 1.6;
     min-height: 100vh;
 }
@@ -22,20 +332,20 @@ body {
 
 /* 头部样式 */
 .header {
-    background-color: #2d2d30;
-    border-bottom: 1px solid #3e3e42;
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
     padding: 15px 0;
     margin-bottom: 20px;
 }
 
 .header h1 {
-    color: #ffffff;
+    color: var(--text-color);
     font-size: 24px;
     font-weight: 600;
 }
 
 .header .subtitle {
-    color: #cccccc;
+    color: var(--text-color);
     font-size: 14px;
     margin-top: 5px;
 }
@@ -52,33 +362,61 @@ body {
     z-index: 1000;
 }
 
+/* 主题切换按钮样式 */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 140px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--button-secondary);
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+    background-color: var(--button-secondary-hover);
+}
+
+.theme-toggle .icon {
+    font-size: 18px;
+}
+
 .connection-status.connected {
-    background-color: #0e639c;
-    color: #ffffff;
+    background-color: var(--button-primary);
+    color: var(--text-light);
 }
 
 .connection-status.disconnected {
-    background-color: #f14c4c;
-    color: #ffffff;
+    background-color: var(--error-color);
+    color: var(--text-light);
 }
 
 .connection-status.connecting {
-    background-color: #ffcc02;
-    color: #000000;
+    background-color: var(--warning-color);
+    color: var(--background-color);
 }
 
 /* 标签页样式 */
 .tabs {
     display: flex;
-    background-color: #2d2d30;
-    border-bottom: 1px solid #3e3e42;
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 20px;
 }
 
 .tab-button {
     background: none;
     border: none;
-    color: #cccccc;
+    color: var(--text-color);
     padding: 12px 20px;
     cursor: pointer;
     font-size: 14px;
@@ -87,14 +425,14 @@ body {
 }
 
 .tab-button:hover {
-    background-color: #3e3e42;
-    color: #ffffff;
+    background-color: var(--border-color);
+    color: var(--text-color);
 }
 
 .tab-button.active {
-    color: #ffffff;
-    border-bottom-color: #0e639c;
-    background-color: #1e1e1e;
+    color: var(--text-color);
+    border-bottom-color: var(--active-border);
+    background-color: var(--background-color);
 }
 
 /* 标签页内容 */
@@ -108,22 +446,22 @@ body {
 
 /* 卡片样式 */
 .card {
-    background-color: #252526;
-    border: 1px solid #3e3e42;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 20px;
     margin-bottom: 20px;
 }
 
 .card h2 {
-    color: #ffffff;
+    color: var(--text-color);
     font-size: 18px;
     margin-bottom: 15px;
     font-weight: 600;
 }
 
 .card h3 {
-    color: #ffffff;
+    color: var(--text-color);
     font-size: 16px;
     margin-bottom: 10px;
     font-weight: 500;
@@ -136,7 +474,7 @@ body {
 
 .form-group label {
     display: block;
-    color: #cccccc;
+    color: var(--text-color);
     font-size: 14px;
     margin-bottom: 8px;
     font-weight: 500;
@@ -145,10 +483,10 @@ body {
 .form-control {
     width: 100%;
     padding: 10px 12px;
-    background-color: #3c3c3c;
-    border: 1px solid #5a5a5a;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
-    color: #cccccc;
+    color: var(--text-color);
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.2s ease;
@@ -156,7 +494,7 @@ body {
 
 .form-control:focus {
     outline: none;
-    border-color: #0e639c;
+    border-color: var(--active-border);
     box-shadow: 0 0 0 2px rgba(14, 99, 156, 0.2);
 }
 
@@ -184,35 +522,35 @@ textarea.form-control {
 }
 
 .btn-primary {
-    background-color: #0e639c;
+    background-color: var(--button-primary);
     color: #ffffff;
 }
 
 .btn-primary:hover {
-    background-color: #1177bb;
+    background-color: var(--button-primary-hover);
 }
 
 .btn-primary:disabled {
-    background-color: #5a5a5a;
+    background-color: var(--button-secondary);
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    background-color: #5a5a5a;
-    color: #ffffff;
+    background-color: var(--button-secondary);
+    color: var(--text-color);
 }
 
 .btn-secondary:hover {
-    background-color: #6e6e6e;
+    background-color: var(--button-secondary-hover);
 }
 
 .btn-success {
-    background-color: #16825d;
-    color: #ffffff;
+    background-color: var(--success-color);
+    color: var(--text-light);
 }
 
 .btn-success:hover {
-    background-color: #1e9973;
+    background-color: var(--button-primary-hover);
 }
 
 /* 图片预览样式 */
@@ -233,15 +571,15 @@ textarea.form-control {
     height: 60px;
     object-fit: cover;
     border-radius: 4px;
-    border: 1px solid #5a5a5a;
+    border: 1px solid var(--input-border);
 }
 
 .image-item .remove-btn {
     position: absolute;
     top: -5px;
     right: -5px;
-    background-color: #f14c4c;
-    color: #ffffff;
+    background-color: var(--error-color);
+    color: var(--text-light);
     border: none;
     border-radius: 50%;
     width: 20px;
@@ -254,7 +592,8 @@ textarea.form-control {
 }
 
 .image-item .remove-btn:hover {
-    background-color: #e73c3c;
+    background-color: var(--error-color);
+    opacity: 0.8;
 }
 
 /* 状态消息样式 */
@@ -268,20 +607,20 @@ textarea.form-control {
 
 .status-message.success {
     background-color: rgba(22, 130, 93, 0.2);
-    border: 1px solid #16825d;
-    color: #4ec9b0;
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
 }
 
 .status-message.error {
     background-color: rgba(241, 76, 76, 0.2);
-    border: 1px solid #f14c4c;
-    color: #f48771;
+    border: 1px solid var(--error-color);
+    color: var(--error-color);
 }
 
 .status-message.info {
     background-color: rgba(14, 99, 156, 0.2);
-    border: 1px solid #0e639c;
-    color: #9cdcfe;
+    border: 1px solid var(--button-primary);
+    color: var(--info-color);
 }
 
 /* 加载动画 */
@@ -289,9 +628,9 @@ textarea.form-control {
     display: inline-block;
     width: 12px;
     height: 12px;
-    border: 2px solid #5a5a5a;
+    border: 2px solid var(--input-border);
     border-radius: 50%;
-    border-top-color: #ffffff;
+    border-top-color: var(--text-color);
     animation: spin 1s ease-in-out infinite;
 }
 
@@ -301,8 +640,8 @@ textarea.form-control {
 
 /* 工作汇报样式 */
 .work-summary {
-    background-color: #2d2d30;
-    border: 1px solid #3e3e42;
+    background-color: var(--header-bg);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     padding: 20px;
     margin-bottom: 20px;
@@ -324,13 +663,13 @@ textarea.form-control {
     
     .tab-button {
         text-align: left;
-        border-bottom: 1px solid #3e3e42;
+        border-bottom: 1px solid var(--border-color);
         border-right: none;
     }
     
     .tab-button.active {
-        border-bottom-color: #3e3e42;
-        border-left: 3px solid #0e639c;
+        border-bottom-color: var(--border-color);
+        border-left: 3px solid var(--active-border);
     }
     
     .connection-status {
@@ -351,8 +690,8 @@ textarea.form-control {
 }
 
 .version-badge {
-    background: linear-gradient(135deg, #0e639c, #1177bb);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--button-primary), var(--button-primary-hover));
+    color: var(--text-light);
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 12px;
@@ -365,19 +704,18 @@ textarea.form-control {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #cccccc;
+    color: var(--text-color);
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 6px;
     transition: all 0.2s ease;
-    border: 1px solid #3e3e42;
+    border: 1px solid var(--border-color);
     background-color: rgba(45, 45, 48, 0.5);
 }
 
 .github-link:hover {
-    color: #ffffff;
-    background-color: #3e3e42;
-    border-color: #5a5a5a;
+    color: var(--text-color);
+    background-color: var(--border-color);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -395,89 +733,5 @@ textarea.form-control {
     .version-info {
         flex-direction: column;
         gap: 10px;
-    }
-}
-
-/* 快捷语选项样式 */
-.quick-phrase-option {
-    margin-top: 12px;
-    padding: 12px;
-    background-color: rgba(14, 99, 156, 0.1);
-    border: 1px solid rgba(14, 99, 156, 0.3);
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.quick-phrase-option:hover {
-    background-color: rgba(14, 99, 156, 0.15);
-    border-color: rgba(14, 99, 156, 0.4);
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin: 0;
-    font-size: 14px;
-    color: #cccccc;
-}
-
-.checkbox-label input[type="checkbox"] {
-    display: none;
-}
-
-.checkbox-custom {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #5a5a5a;
-    border-radius: 3px;
-    margin-right: 8px;
-    position: relative;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
-    background-color: #0e639c;
-    border-color: #0e639c;
-}
-
-.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.checkbox-text {
-    font-weight: 500;
-    color: #ffffff;
-}
-
-.quick-phrase-hint {
-    margin-top: 6px;
-    margin-left: 26px;
-    font-size: 12px;
-    color: #9cdcfe;
-    line-height: 1.4;
-}
-
-/* 响应式快捷语选项 */
-@media (max-width: 768px) {
-    .quick-phrase-option {
-        padding: 10px;
-    }
-
-    .checkbox-label {
-        font-size: 13px;
-    }
-
-    .quick-phrase-hint {
-        font-size: 11px;
-        margin-left: 24px;
     }
 }

@@ -5,7 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎯 MCP Feedback Collector - Web版</title>
     <style>
-        /* VS Code 风格的深色主题 */
+        /* 主题变量 */
+        :root {
+            --background-color: #1e1e1e;
+            --text-color: #cccccc;
+            --header-bg: #2d2d30;
+            --border-color: #3e3e42;
+            --card-bg: #252526;
+            --input-bg: #3c3c3c;
+            --input-border: #5a5a5a;
+            --button-primary: #007acc;
+            --button-primary-hover: #005a9e;
+            --text-muted: #969696;
+            --text-light: #ffffff;
+            --success-color: #4ec9b0;
+            --error-color: #f14c4c;
+            --warning-color: #ff9800;
+            --info-color: #3b82f6;
+        }
+        
+        /* 浅色主题 */
+        .light-theme {
+            --background-color: #f8f9fa;
+            --text-color: #212529;
+            --header-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #d1d7db;
+            --button-primary: #0066b8;
+            --button-primary-hover: #004c8a;
+            --text-muted: #6c757d;
+            --text-light: #ffffff;  /* 按钮文字保持白色 */
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #fd7e14;
+            --info-color: #17a2b8;
+        }
+
+        /* 浅色主题特殊覆盖 */
+        .light-theme .page-title,
+        .light-theme .feedback-title,
+        .light-theme .chat-title {
+            color: var(--text-color);
+        }
+
+        .light-theme .form-label {
+            color: var(--text-color);
+        }
+
+        .light-theme .description-header {
+            color: var(--text-color);
+        }
+
+        .light-theme .get-key-link:hover {
+            color: var(--button-primary);
+        }
+
+        /* 浅色主题下的对话框特殊样式 */
+        .light-theme .dialog-overlay {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .light-theme .dialog-content {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +79,8 @@
 
         body {
             font-family: "Segoe UI", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
-            background: #1e1e1e;
-            color: #cccccc;
+            background: var(--background-color);
+            color: var(--text-color);
             font-size: 13px;
             line-height: 1.5;
             padding: 20px;
@@ -31,7 +96,7 @@
         .page-title {
             font-size: 24px;
             font-weight: 600;
-            color: #ffffff;
+            color: var(--text-light);
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -40,7 +105,7 @@
 
         .page-subtitle {
             font-size: 14px;
-            color: #969696;
+            color: var(--text-muted);
             margin-bottom: 24px;
         }
 
@@ -56,27 +121,54 @@
         }
 
         .connection-status.connected {
-            background: #4ec9b0;
-            color: #1e1e1e;
+            background: var(--success-color);
+            color: var(--background-color);
         }
 
         .connection-status.disconnected {
-            background: #f14c4c;
-            color: white;
+            background: var(--error-color);
+            color: var(--text-light);
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 140px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--input-border);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
         /* 导航标签 */
         .nav-tabs {
             display: flex;
             margin-bottom: 24px;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .nav-tab {
             padding: 12px 20px;
             background: transparent;
             border: none;
-            color: #969696;
+            color: var(--text-color);
+            opacity: 0.7;
             font-size: 13px;
             cursor: pointer;
             border-bottom: 2px solid transparent;
@@ -84,18 +176,18 @@
         }
 
         .nav-tab:hover {
-            color: #cccccc;
+            opacity: 0.9;
         }
 
         .nav-tab.active {
-            color: #ffffff;
-            border-bottom-color: #007acc;
+            opacity: 1;
+            border-bottom-color: var(--button-primary);
         }
 
         /* 获取key链接 */
         .get-key-link {
             padding: 12px 20px;
-            color: #007acc;
+            color: var(--button-primary);
             text-decoration: none;
             font-size: 13px;
             cursor: pointer;
@@ -104,7 +196,7 @@
         }
 
         .get-key-link:hover {
-            color: #ffffff;
+            color: var(--text-light);
             text-decoration: none;
         }
 
@@ -123,15 +215,15 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: #252526;
-            border: 1px solid #3e3e42;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             margin-bottom: 16px;
         }
 
         .refresh-btn {
-            background: #007acc;
-            color: white;
+            background: var(--button-primary);
+            color: #ffffff;
             border: none;
             padding: 8px 16px;
             border-radius: 4px;
@@ -144,39 +236,39 @@
         }
 
         .refresh-btn:hover {
-            background: #005a9e;
+            background: var(--button-primary-hover);
         }
 
         .refresh-btn:disabled {
-            background: #666;
+            background: var(--input-border);
             cursor: not-allowed;
         }
 
         /* 状态文字显示 */
         .refresh-status-text {
             font-size: 12px;
-            color: #888;
+            color: var(--text-muted);
             margin-left: 16px;
             flex: 1;
             text-align: right;
         }
 
         .refresh-status-text.loading {
-            color: #3b82f6;
+            color: var(--info-color);
         }
 
         .refresh-status-text.success {
-            color: #22c55e;
+            color: var(--success-color);
         }
 
         .refresh-status-text.error {
-            color: #ef4444;
+            color: var(--error-color);
         }
 
         /* 工作汇报卡片 */
         .report-card {
-            background: #2d2d30;
-            border: 1px solid #3e3e42;
+            background: var(--header-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             margin-bottom: 16px;
             overflow: hidden;
@@ -184,9 +276,9 @@
 
         .card-header {
             padding: 16px 20px;
-            background: #323233;
-            border-bottom: 1px solid #3e3e42;
-            color: #ffffff;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
         }
 
         .card-title {
@@ -209,8 +301,8 @@
 
         /* 反馈表单卡片 */
         .feedback-card {
-            background: #2d2d30;
-            border: 1px solid #3e3e42;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             margin-top: 24px;
             overflow: hidden;
@@ -218,9 +310,9 @@
 
         .feedback-header {
             padding: 16px 20px;
-            background: #323233;
-            border-bottom: 1px solid #3e3e42;
-            color: #ffffff;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
         }
 
         .feedback-title {
@@ -233,6 +325,61 @@
 
         .feedback-body {
             padding: 20px;
+        }
+
+        .feedback-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--background-color);
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 6px;
         }
 
         /* 表单元素 */
@@ -252,10 +399,10 @@
             width: 100%;
             min-height: 100px;
             padding: 12px;
-            border: 1px solid #3e3e42;
+            border: 1px solid var(--input-border);
             border-radius: 4px;
-            background: #1e1e1e;
-            color: #cccccc;
+            background: var(--input-bg);
+            color: var(--text-color);
             font-family: inherit;
             font-size: 13px;
             resize: vertical;
@@ -263,11 +410,11 @@
 
         .form-textarea:focus {
             outline: none;
-            border-color: #007acc;
+            border-color: var(--button-primary);
         }
 
         .form-textarea::placeholder {
-            color: #6a6a6a;
+            color: var(--text-muted);
         }
 
         /* 图片预览区域 */
@@ -287,8 +434,8 @@
             width: 60px;
             height: 60px;
             border-radius: 4px;
-            background: #1e1e1e;
-            border: 1px solid #3e3e42;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
             overflow: hidden;
         }
 
@@ -305,7 +452,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #e81123;
+            background: var(--error-color);
             color: white;
             border: none;
             font-size: 12px;
@@ -324,10 +471,10 @@
 
         .toolbar-btn {
             padding: 6px 12px;
-            border: 1px solid #3e3e42;
+            border: 1px solid var(--input-border);
             border-radius: 4px;
-            background: #2d2d30;
-            color: #cccccc;
+            background: var(--card-bg);
+            color: var(--text-color);
             cursor: pointer;
             font-size: 12px;
             display: flex;
@@ -336,8 +483,8 @@
         }
 
         .toolbar-btn:hover {
-            background: #3c3c3c;
-            border-color: #007acc;
+            background: var(--button-secondary);
+            border-color: var(--button-primary);
         }
 
         /* 按钮组 */
@@ -356,23 +503,23 @@
         }
 
         .btn-secondary {
-            background: transparent;
-            color: #969696;
-            border: 1px solid #3e3e42;
+            background: var(--button-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--input-border);
         }
 
         .btn-secondary:hover {
-            background: #3c3c3c;
+            background: var(--button-secondary-hover);
         }
 
         .btn-primary {
-            background: #007acc;
-            color: white;
-            border: 1px solid #007acc;
+            background: var(--button-primary);
+            color: var(--text-light);
+            border: 1px solid var(--button-primary);
         }
 
         .btn-primary:hover {
-            background: #005a9e;
+            background: var(--button-primary-hover);
         }
 
         .btn:disabled {
@@ -389,23 +536,23 @@
         }
 
         .status-message.success {
-            background: #4ec9b0;
-            color: #1e1e1e;
+            background: var(--success-color);
+            color: var(--text-light);
         }
 
         .status-message.error {
-            background: #f14c4c;
-            color: white;
+            background: var(--error-color);
+            color: var(--text-light);
         }
 
         .status-message.warning {
-            background: #ff9800;
-            color: white;
+            background: var(--warning-color);
+            color: var(--text-light);
         }
 
         .status-message.info {
-            background: #007acc;
-            color: white;
+            background: var(--info-color);
+            color: var(--text-light);
         }
 
         /* 超时倒计时显示 */
@@ -421,6 +568,7 @@
             font-weight: 500;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -444,7 +592,7 @@
         /* 加载状态 - 简化为纯文字显示 */
         .loading {
             display: inline;
-            color: #007acc;
+            color: var(--info-color);
             font-weight: 500;
         }
 
@@ -473,8 +621,8 @@
         }
 
         .dialog-content {
-            background: #2d2d30;
-            border: 1px solid #3e3e42;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             min-width: 400px;
             max-width: 500px;
@@ -511,12 +659,12 @@
 
         .dialog-header {
             padding: 20px 24px 16px;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .dialog-header h3 {
             margin: 0;
-            color: #ffffff;
+            color: var(--text-color);
             font-size: 16px;
             font-weight: 600;
         }
@@ -527,7 +675,7 @@
 
         .dialog-body p {
             margin: 0 0 16px;
-            color: #cccccc;
+            color: var(--text-color);
             font-size: 14px;
             line-height: 1.5;
         }
@@ -553,50 +701,50 @@
         }
 
         .dialog-btn.primary {
-            background: #007acc;
-            color: white;
+            background: var(--button-primary);
+            color: var(--text-light);
         }
 
         .dialog-btn.primary:hover {
-            background: #005a9e;
+            background: var(--button-primary-hover);
         }
 
         .dialog-btn.secondary {
-            background: #4ec9b0;
-            color: #1e1e1e;
+            background: var(--success-color);
+            color: var(--text-light);
         }
 
         .dialog-btn.secondary:hover {
-            background: #3ba896;
+            opacity: 0.9;
         }
 
         .dialog-footer {
             padding: 16px 24px 20px;
-            border-top: 1px solid #3e3e42;
+            border-top: 1px solid var(--border-color);
             text-align: right;
         }
 
         .dialog-btn.cancel {
-            background: transparent;
-            color: #969696;
-            border: 1px solid #3e3e42;
+            background: var(--button-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
         }
 
         .dialog-btn.cancel:hover {
-            background: #3c3c3c;
-            color: #cccccc;
+            background: var(--button-secondary-hover);
+            color: var(--text-color);
         }
 
         /* 焦点样式 */
         .dialog-btn:focus {
-            outline: 2px solid #007acc;
+            outline: 2px solid var(--button-primary);
             outline-offset: 2px;
         }
 
         /* 聊天界面样式 */
         .chat-container {
-            background: #2d2d30;
-            border: 1px solid #3e3e42;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             height: 500px;
             display: flex;
@@ -605,9 +753,9 @@
 
         .chat-header {
             padding: 16px 20px;
-            background: #323233;
-            border-bottom: 1px solid #3e3e42;
-            color: #ffffff;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
         }
 
         .chat-title {
@@ -643,26 +791,26 @@
         }
 
         .message.user .message-bubble {
-            background: #007acc;
-            color: white;
+            background: var(--button-primary);
+            color: var(--text-light);
         }
 
         .message.ai .message-bubble {
-            background: #323233;
-            color: #cccccc;
-            border: 1px solid #3e3e42;
+            background: var(--header-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
         }
 
         .message-time {
             text-align: center;
-            color: #969696;
+            color: var(--text-muted);
             font-size: 12px;
             margin: 16px 0 8px;
         }
 
         .api-hint {
-            background: #323233;
-            border: 1px solid #3e3e42;
+            background: var(--header-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 16px;
             margin: 16px 0;
@@ -670,26 +818,26 @@
         }
 
         .api-hint-title {
-            color: #4ec9b0;
+            color: var(--success-color);
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
         .api-hint-link {
-            color: #007acc;
+            color: var(--button-primary);
             text-decoration: none;
         }
 
         .api-hint-desc {
             font-size: 12px;
-            color: #969696;
+            color: var(--text-muted);
             margin-top: 4px;
         }
 
         .chat-input-area {
-            background: #323233;
-            border-top: 1px solid #3e3e42;
+            background: var(--header-bg);
+            border-top: 1px solid var(--border-color);
             padding: 12px;
         }
 
@@ -704,10 +852,10 @@
             min-height: 32px;
             max-height: 80px;
             padding: 6px 12px;
-            border: 1px solid #3e3e42;
+            border: 1px solid var(--input-border);
             border-radius: 4px;
-            background: #1e1e1e;
-            color: #cccccc;
+            background: var(--input-bg);
+            color: var(--text-color);
             resize: none;
             font-family: inherit;
             font-size: 13px;
@@ -716,7 +864,7 @@
 
         .chat-input:focus {
             outline: none;
-            border-color: #007acc;
+            border-color: var(--button-primary);
         }
 
         .chat-actions {
@@ -728,9 +876,9 @@
             width: 32px;
             height: 32px;
             border-radius: 4px;
-            border: 1px solid #3e3e42;
-            background: #2d2d30;
-            color: #cccccc;
+            border: 1px solid var(--input-border);
+            background: var(--card-bg);
+            color: var(--text-color);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -739,26 +887,26 @@
         }
 
         .chat-btn:hover {
-            background: #3c3c3c;
-            border-color: #007acc;
+            background: var(--button-secondary);
+            border-color: var(--button-primary);
         }
 
         .send-btn {
-            background: #007acc !important;
-            border-color: #007acc !important;
-            color: white !important;
+            background: var(--button-primary) !important;
+            border-color: var(--button-primary) !important;
+            color: var(--text-light) !important;
         }
 
         .send-btn:hover {
-            background: #005a9e !important;
+            background: var(--button-primary-hover) !important;
         }
 
         .image-previews-container {
             margin-bottom: 8px;
             padding: 8px;
-            background: #1e1e1e;
+            background: var(--input-bg);
             border-radius: 4px;
-            border: 1px solid #3e3e42;
+            border: 1px solid var(--input-border);
         }
 
         /* 滚动条样式 */
@@ -767,17 +915,17 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #1e1e1e;
+            background: var(--background-color);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #424242;
+            background: var(--border-color);
             border-radius: 7px;
-            border: 3px solid #1e1e1e;
+            border: 3px solid var(--background-color);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #4f4f4f;
+            background: var(--text-muted);
         }
 
         /* 图片描述区域样式 */
@@ -792,14 +940,14 @@
         .description-item {
             margin-bottom: 12px;
             padding: 12px;
-            background: #252526;
-            border: 1px solid #3e3e42;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
         }
 
         .description-header {
             margin-bottom: 8px;
-            color: #ffffff;
+            color: var(--text-light);
             font-size: 13px;
             font-weight: 500;
         }
@@ -807,9 +955,9 @@
         .description-text {
             width: 100%;
             min-height: 60px;
-            background: #1e1e1e;
-            border: 1px solid #3e3e42;
-            color: #cccccc;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
             padding: 8px;
             border-radius: 4px;
             font-family: inherit;
@@ -819,7 +967,7 @@
 
         .description-text:focus {
             outline: none;
-            border-color: #007acc;
+            border-color: var(--button-primary);
         }
     </style>
 </head>
@@ -829,6 +977,11 @@
         <div id="connection-status" class="connection-status disconnected">
             连接中...
         </div>
+        
+        <!-- 主题切换按钮 -->
+        <button id="theme-toggle" class="theme-toggle" title="切换主题">
+            <span class="icon">🌙</span>
+        </button>
 
         <!-- 页面标题 -->
         <h1 class="page-title">
@@ -840,7 +993,7 @@
         <!-- 版本信息和链接 -->
         <div class="version-info">
             <span class="version-badge">v<span id="version-number">2.0.8</span></span>
-            <a href="https://github.com/sanshao85/mcp-feedback-collector-web" target="_blank" class="github-link" title="查看源代码">
+            <a href="https://github.com/sanshao85/mcp-feedback-collector-web" target="_blank" rel="noopener noreferrer" class="github-link" title="查看源代码">
                 <svg class="github-icon" viewBox="0 0 24 24" width="20" height="20">
                     <path fill="currentColor" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                 </svg>
@@ -852,7 +1005,7 @@
         <div class="nav-tabs">
             <button class="nav-tab active" onclick="switchTab('report')">📋 工作汇报</button>
             <button class="nav-tab" onclick="switchTab('chat')">💬 AI对话</button>
-            <a href="https://api.ssopen.top" target="_blank" class="get-key-link">🔑 获取key</a>
+            <a href="https://api.ssopen.top" target="_blank" rel="noopener noreferrer" class="get-key-link">🔑 获取key</a>
         </div>
 
         <!-- 状态消息区域 -->
@@ -875,14 +1028,14 @@
             <!-- 动态工作汇报内容将在这里显示 -->
             <div id="default-message" class="report-card" style="text-align: center; padding: 40px;">
                 <div class="card-body">
-                    <div style="color: #969696; font-size: 14px;">
+                    <div style="color: var(--text-muted); font-size: 14px;">
                         <span style="font-size: 24px;">📋</span>
                         <br><br>
                         等待AI工作汇报...
                         <br><br>
                         <small>当AI调用 collect_feedback() 时，工作汇报内容将显示在这里</small>
                         <br><br>
-                        <button onclick="refreshWorkSummary()" style="background: #007acc; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        <button onclick="refreshWorkSummary()" style="background: var(--button-primary); color: #ffffff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
                             🔄 手动刷新
                         </button>
                     </div>
@@ -906,18 +1059,6 @@
                                 class="form-textarea"
                                 placeholder="请输入您对本次工作的反馈和建议..."
                             ></textarea>
-
-                            <!-- 快捷语选项 -->
-                            <div class="quick-phrase-option">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="add-quick-phrase" checked>
-                                    <span class="checkbox-custom"></span>
-                                    <span class="checkbox-text">附加快捷语（推荐）</span>
-                                </label>
-                                <div class="quick-phrase-hint">
-                                    自动附加MCP反馈收集提示词，提升AI响应质量
-                                </div>
-                            </div>
                         </div>
 
                         <div class="form-group">
@@ -981,7 +1122,7 @@
                     <div id="api-hint" class="api-hint" style="display: none;">
                         <div class="api-hint-title">🔑 需要API密钥</div>
                         <div>
-                            <a href="https://api.ssopen.top/" target="_blank" class="api-hint-link">
+                            <a href="https://api.ssopen.top/" target="_blank" rel="noopener noreferrer" class="api-hint-link">
                                 点击获取 SSOpen API 密钥
                             </a>
                         </div>
